@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python manage.py migrate --noinput",
   "functions": {
     "almora_project/wsgi.py": {
       "maxDuration": 60
