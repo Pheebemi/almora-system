@@ -28,13 +28,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-#0aot&y4&=gd54c55-%lt3r2j&@u405n%#4)9_@&ft06ixtlx7')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+# Vercel sets VERCEL=1 on every deployment; default DEBUG off there even if
+# DJANGO_DEBUG isn't explicitly set, so a misconfigured deploy never leaks a
+# debug traceback page publicly.
+_default_debug = 'False' if os.getenv('VERCEL') else 'True'
+DEBUG = os.getenv('DJANGO_DEBUG', _default_debug).lower() == 'true'
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'almorapoly.edu.ng',
     'www.almorapoly.edu.ng',
+    '.vercel.app',
 ]
 # Also allow any from env (e.g. for other domains or overrides)
 _env_hosts = os.getenv('DJANGO_ALLOWED_HOSTS', '').strip()
@@ -221,6 +226,21 @@ THUMBNAIL_ALIASES = {
 }
 
 # Security Settings
+# Vercel (like most PaaS hosts) terminates TLS at the edge and forwards
+# plain HTTP internally, flagging the original scheme via this header.
+# Without it, request.is_secure() is always False behind the proxy, which
+# breaks CSRF origin checks and secure-cookie flags on HTTPS deployments.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://almorapoly.edu.ng',
+    'https://www.almorapoly.edu.ng',
+]
+_env_csrf_origins = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').strip()
+if _env_csrf_origins:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _env_csrf_origins.split(',') if o.strip()]
+
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0'))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False').lower() == 'true'
