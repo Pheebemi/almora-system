@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import urllib.parse
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -112,25 +113,42 @@ WSGI_APPLICATION = 'almora_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-_db_engine = os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3')
-_db_name = os.getenv('DATABASE_NAME', 'db.sqlite3')
-DATABASES = {
-    'default': {
-        'ENGINE': _db_engine,
-        'NAME': str(BASE_DIR / _db_name) if _db_engine == 'django.db.backends.sqlite3' else _db_name,
+_database_url = os.getenv('DATABASE_URL', '').strip()
+if _database_url:
+    # Serverless hosts (Vercel + Neon/Vercel Postgres) inject a single
+    # connection string rather than the discrete DATABASE_* vars below.
+    _parsed_db_url = urllib.parse.urlparse(_database_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _parsed_db_url.path.lstrip('/'),
+            'USER': _parsed_db_url.username,
+            'PASSWORD': _parsed_db_url.password,
+            'HOST': _parsed_db_url.hostname,
+            'PORT': _parsed_db_url.port or '5432',
+            'OPTIONS': {'sslmode': 'require'},
+        }
     }
-}
-if _db_engine in ('django.db.backends.mysql', 'django.db.backends.postgresql'):
-    DATABASES['default'].update({
-        'USER': os.getenv('DATABASE_USER', ''),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.getenv('DATABASE_PORT', '3306' if 'mysql' in _db_engine else '5432'),
-    })
-if _db_engine == 'django.db.backends.mysql':
-    DATABASES['default']['OPTIONS'] = {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+else:
+    _db_engine = os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3')
+    _db_name = os.getenv('DATABASE_NAME', 'db.sqlite3')
+    DATABASES = {
+        'default': {
+            'ENGINE': _db_engine,
+            'NAME': str(BASE_DIR / _db_name) if _db_engine == 'django.db.backends.sqlite3' else _db_name,
+        }
     }
+    if _db_engine in ('django.db.backends.mysql', 'django.db.backends.postgresql'):
+        DATABASES['default'].update({
+            'USER': os.getenv('DATABASE_USER', ''),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+            'PORT': os.getenv('DATABASE_PORT', '3306' if 'mysql' in _db_engine else '5432'),
+        })
+    if _db_engine == 'django.db.backends.mysql':
+        DATABASES['default']['OPTIONS'] = {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
 
 
 # Password validation
