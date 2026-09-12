@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Dashboard - Almora Polytechnic Pantisawa</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Mobile Menu Button -->
+        <div class="lg:hidden fixed top-4 left-4 z-50">
+            <button id="mobile-menu-button" class="bg-white p-2 rounded-md shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-bars text-gray-600"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 transition-transform duration-300 ease-in-out">
+            <!-- Close button for mobile -->
+            <div class="lg:hidden flex justify-end p-4">
+                <button id="close-sidebar" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Almora Polytechnic Logo" class="h-12">
+                <h1 class="text-lg font-semibold text-gray-800 mt-2">Almora Polytechnic Pantisawa</h1>
+            </div>
+            
+            <nav class="mt-6">
+                <div class="px-4 space-y-3">
+                    <a href="{% url 'core:applicant_dashboard' %}" 
+                       class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-tachometer-alt w-5 h-5 mr-4 text-gray-500"></i>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+
+                    <a href="{% url 'core:screening_form' %}" 
+                       class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-file-alt w-5 h-5 mr-4 text-gray-500"></i>
+                        <span class="font-medium">Screening Form</span>
+                    </a>
+
+                    <a href="{% url 'dashboard:notifications' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors duration-200 relative">
+                        <i class="fas fa-bell w-5 h-5 mr-4 text-gray-500"></i>
+                        <span class="font-medium">Notifications</span>
+                        {% if unread_count > 0 %}
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ unread_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <a href="{% url 'accounts:logout' %}" 
+                       class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt w-5 h-5 mr-4"></i>
+                        <span class="font-medium">Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Overlay for mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"></div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto lg:ml-0">
+            {% block late %}{% endblock %}
+        </div>
+    </div>
+
+    <script>
+        // Mobile sidebar functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const closeSidebarButton = document.getElementById('close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            // Open sidebar
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Close sidebar
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+            
+            closeSidebarButton.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+            
+            // Close sidebar on window resize (if switching to desktop)
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) { // lg breakpoint
+                    closeSidebar();
+                }
+            });
+            
+            // Close sidebar when clicking on a navigation link (mobile)
+            const navLinks = sidebar.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 1024) {
+                        closeSidebar();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

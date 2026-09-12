@@ -1,0 +1,518 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}My Courses{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <!-- Main Content -->
+    <main class="h-full overflow-y-auto max-w-full pt-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Welcome Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">
+                            My Course Catalog 📚
+                        </h1>
+                        <p class="text-purple-100 text-lg">
+                            {{ student.get_current_level_display }} • {{ student.get_current_semester_display }} • {{ student.department.name }}
+                        </p>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex flex-col items-end">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <div class="text-sm text-purple-100">Academic Session</div>
+                            <div class="font-bold text-lg">{{ student.current_session.name }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Info Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Department</h3>
+                        <p class="text-lg font-semibold">{{ student.department.name }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                        <p class="text-lg font-semibold">{{ student.current_level.display_name }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Current Semester</h3>
+                        <p class="text-lg font-semibold">{{ student.get_current_semester_display }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-500">Available Courses</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_available }}</p>
+                            <p class="text-sm text-gray-600">
+                                {% if first_semester_count and second_semester_count %}
+                                    {{ first_semester_count }} First • {{ second_semester_count }} Second
+                                {% elif first_semester_count %}
+                                    {{ first_semester_count }} First Semester
+                                {% elif second_semester_count %}
+                                    {{ second_semester_count }} Second Semester
+                                {% else %}
+                                    No courses available
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-500">Registered Courses</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_registered }}</p>
+                            <p class="text-sm text-gray-600">{{ total_credits }} total credits</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-orange-100 rounded-full">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-500">Current Semester</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ student.get_current_semester_display }}</p>
+                            <p class="text-sm text-gray-600">{{ student.current_session.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- First Semester Courses -->
+            {% if first_semester_courses %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            First Semester Courses
+                        </h2>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full">
+                            {{ first_semester_courses|length }} courses
+                        </span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {% for course in first_semester_courses %}
+                        <div class="border border-gray-200 rounded-lg p-5 hover:border-blue-300 hover:shadow-md transition-all duration-200 {% if course.id in registered_course_ids %}bg-blue-50 border-blue-300{% endif %}">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <span class="text-xs font-bold text-blue-600">{{ course.code|slice:":2" }}</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-sm">{{ course.code }}</h3>
+                                        <p class="text-xs text-gray-500">{{ course.level.display_name }}</p>
+                                    </div>
+                                </div>
+                                {% if course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Registered
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h4 class="font-medium text-gray-800 mb-2 leading-tight">{{ course.title }}</h4>
+
+                            <div class="flex items-center justify-between text-sm text-gray-600 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                    {{ course.credits }} credits
+                                </span>
+                            </div>
+
+                            {% if course.description %}
+                            <p class="text-xs text-gray-600 leading-relaxed">{{ course.description|truncatechars:80 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Second Semester Courses -->
+            {% if second_semester_courses %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Second Semester Courses
+                        </h2>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
+                            {{ second_semester_courses|length }} courses
+                        </span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {% for course in second_semester_courses %}
+                        <div class="border border-gray-200 rounded-lg p-5 hover:border-green-300 hover:shadow-md transition-all duration-200 {% if course.id in registered_course_ids %}bg-green-50 border-green-300{% endif %}">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <span class="text-xs font-bold text-green-600">{{ course.code|slice:":2" }}</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-sm">{{ course.code }}</h3>
+                                        <p class="text-xs text-gray-500">{{ course.level.display_name }}</p>
+                                    </div>
+                                </div>
+                                {% if course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Registered
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h4 class="font-medium text-gray-800 mb-2 leading-tight">{{ course.title }}</h4>
+
+                            <div class="flex items-center justify-between text-sm text-gray-600 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                    {{ course.credits }} credits
+                                </span>
+                            </div>
+
+                            {% if course.description %}
+                            <p class="text-xs text-gray-600 leading-relaxed">{{ course.description|truncatechars:80 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Empty State -->
+            {% if not first_semester_courses and not second_semester_courses %}
+            <div class="bg-white rounded-xl p-12 shadow-lg border border-gray-200 text-center">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Courses Available</h3>
+                <p class="text-gray-600 mb-4">There are currently no courses available for your level and department.</p>
+                <p class="text-sm text-gray-500">Please contact your department coordinator if you believe this is an error.</p>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            {% if first_semester_courses or second_semester_courses %}
+            <div class="mt-6 flex justify-center space-x-4">
+                <a href="{% url 'accounts:register_courses' %}"
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Register Courses
+                </a>
+
+                <a href="{% url 'accounts:view_registered_courses' %}"
+                   class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    View Registered Courses
+                </a>
+
+                {% if registered_courses %}
+                <button onclick="printCourseForm()"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print Course Form
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<script>
+    // Function to print course form
+    function printCourseForm() {
+        // Show loading state
+        const printButton = event.target;
+        const originalText = printButton.innerHTML;
+        printButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+        printButton.disabled = true;
+        
+        // Fetch student course data
+        fetch('{% url "core:get_student_course_data" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank', 'width=900,height=700');
+                
+                // Create the comprehensive printable HTML content
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Course Form - ${data.student_info.name}</title>
+                        <style>
+                            @page {
+                                size: A4;
+                                margin: 10mm 15mm;
+                            }
+                            @media print {
+                                html, body {
+                                    width: 210mm;
+                                    height: 297mm;
+                                    margin: 0;
+                                    padding: 0;
+                                    overflow: hidden;
+                                }
+                                .no-print { display: none !important; }
+                            }
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body {
+                                font-family: 'Times New Roman', Times, serif;
+                                font-size: 13px;
+                                line-height: 1.4;
+                                color: #000;
+                                max-width: 800px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background: white;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 15px;
+                            }
+                            .header img {
+                                width: 70px;
+                                height: 70px;
+                                display: block;
+                                margin: 0 auto 8px;
+                            }
+                            .school-name {
+                                font-size: 22px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                            }
+                            .faculty-name {
+                                font-size: 16px;
+                                margin-top: 2px;
+                            }
+                            .dept-name {
+                                font-size: 14px;
+                                margin-top: 2px;
+                            }
+                            .form-title {
+                                font-size: 14px;
+                                font-weight: bold;
+                                margin-top: 8px;
+                            }
+                            .student-info {
+                                margin-bottom: 10px;
+                                border-top: 1px solid #000;
+                                padding-top: 8px;
+                            }
+                            .info-row {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 3px;
+                                font-size: 13px;
+                            }
+                            .semester-heading {
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 14px;
+                                margin: 12px 0 4px;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 12px;
+                            }
+                            table th, table td {
+                                border: 1px solid #000;
+                                padding: 4px 8px;
+                                text-align: left;
+                            }
+                            table th {
+                                font-weight: bold;
+                                background: #f5f5f5;
+                                text-align: center;
+                                font-size: 12px;
+                            }
+                            td.center { text-align: center; }
+                            .total-line {
+                                margin: 6px 0 0;
+                                font-size: 13px;
+                            }
+                            .signatures {
+                                margin-top: 25px;
+                                font-size: 13px;
+                            }
+                            .sig-line {
+                                margin-bottom: 12px;
+                            }
+                            .sig-line span {
+                                font-weight: bold;
+                            }
+                            .print-btn {
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                padding: 10px 20px;
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                font-weight: bold;
+                                font-size: 14px;
+                                cursor: pointer;
+                                z-index: 1000;
+                            }
+                            .print-btn:hover { background: #047857; }
+                        </style>
+                    </head>
+                    <body>
+                        <button class="print-btn no-print" onclick="window.print()">Print Course Form</button>
+
+                        <div class="header">
+                            <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo">
+                            <div class="school-name">Almora Polytechnic Pantisawa</div>
+                            <div class="faculty-name">${data.student_info.faculty}</div>
+                            <div class="dept-name">(Department of ${data.student_info.department})</div>
+                            <div class="form-title">STUDENT REGISTERED COURSES</div>
+                        </div>
+
+                        <div class="student-info">
+                            <div class="info-row">
+                                <div>SESSION: ${data.academic_session}</div>
+                                <div>LEVEL: ${data.student_info.level}</div>
+                            </div>
+                            <div class="info-row">
+                                <div>NAME: ${data.student_info.name.toUpperCase()}</div>
+                                <div>ID NO: ${data.student_info.id_number}</div>
+                            </div>
+                        </div>
+
+                        ${data.courses.first_semester.length > 0 ? `
+                            <div class="semester-heading">FIRST SEMESTER</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">SN</th>
+                                        <th style="width:90px;">CODE</th>
+                                        <th>TITLE</th>
+                                        <th style="width:50px;">UNIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.courses.first_semester.map((course, i) =>
+                                        '<tr><td class="center">' + (i + 1) + '</td><td>' + course.code + '</td><td>' + course.title + '</td><td class="center">' + course.credits + '</td></tr>'
+                                    ).join('')}
+                                </tbody>
+                            </table>
+                            <div class="total-line">Total Unit of First Semester is ${data.total_credits.first_semester}</div>
+                        ` : ''}
+
+                        ${data.courses.second_semester.length > 0 ? `
+                            <div class="semester-heading">SECOND SEMESTER</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">SN</th>
+                                        <th style="width:90px;">CODE</th>
+                                        <th>TITLE</th>
+                                        <th style="width:50px;">UNIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.courses.second_semester.map((course, i) =>
+                                        '<tr><td class="center">' + (i + 1) + '</td><td>' + course.code + '</td><td>' + course.title + '</td><td class="center">' + course.credits + '</td></tr>'
+                                    ).join('')}
+                                </tbody>
+                            </table>
+                            <div class="total-line">Total Unit of Second Semester is ${data.total_credits.second_semester}</div>
+                        ` : ''}
+
+                        <div class="signatures">
+                            <div class="sig-line"><span>STUDENT'S SIGNATURE:</span> .......................................................................................................................................................................................................</div>
+                            <div class="sig-line"><span>HOD'S SIGNATURE:</span> ............................................................................................................................................................................................................</div>
+                            <div class="sig-line"><span>REGISTRAR'S SIGNATURE:</span> .............................................................................................................................................................................................</div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Write content to the new window
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                
+                // Wait for content to load then focus
+                printWindow.onload = function() {
+                    printWindow.focus();
+                };
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading course data. Please try again.');
+            })
+            .finally(() => {
+                // Restore button state
+                printButton.innerHTML = originalText;
+                printButton.disabled = false;
+            });
+    }
+</script>
+
+{% endblock %} 

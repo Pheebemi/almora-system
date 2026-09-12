@@ -1,0 +1,40 @@
+{% extends 'layout/auth-layout.html' %}
+
+{% block title %}Exam Officer Login{% endblock %}
+
+{% block header %}Exam Officer Login{% endblock %}
+
+{% block layout %}
+
+<div class="mb-4">
+    <label for="forUsername" class="block text-sm font-semibold mb-2 text-gray-600">Username</label>
+    <input type="text" id="forUsername"
+        class="py-3 px-4 block w-full border-gray-200 rounded-md text-sm focus:border-blue-600 focus:ring-0"
+        name="username" placeholder="Enter your username">
+</div>
+<div class="mb-6">
+    <label for="forPassword" class="block text-sm font-semibold mb-2 text-gray-600">Password</label>
+    <input type="password" id="forPassword" name="password"
+        class="py-3 px-4 block w-full border-gray-200 rounded-md text-sm focus:border-blue-600 focus:ring-0"
+        placeholder="Enter your password">
+</div>
+<div class="flex justify-between">
+    <div class="flex">
+        <input type="checkbox" class="shrink-0 mt-0.5 border-gray-200 rounded-[4px] text-blue-600 focus:ring-blue-500"
+            id="hs-default-checkbox" checked>
+        <label for="hs-default-checkbox" class="text-sm text-gray-600 ms-3">Remember this Device</label>
+    </div>
+    <a href="../" class="text-sm font-medium text-blue-600 hover:text-blue-700">Forgot Password?</a>
+</div>
+<div class="grid my-6">
+    <button type="submit" class="btn py-[10px] text-base text-white font-medium hover:bg-blue-700">Sign In</button>
+</div>
+
+<div class="flex justify-center gap-2 items-center">
+    <p class="text-base font-medium text-gray-500">Staff?</p>
+    <a href="{% url 'staff_login' %}" class="text-sm font-medium text-blue-600 hover:text-blue-700">Login as
+        Staff</a>
+</div>
+</div>
+
+{% endblock %}

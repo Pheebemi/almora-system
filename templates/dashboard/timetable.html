@@ -1,0 +1,81 @@
+{% extends 'layout/student_dash_layout.html' %}
+
+{% load static %}
+
+{% block title %} Courses {% endblock %}
+
+{% block layout %}
+
+<div class=" w-full page-wrapper overflow-hidden">
+
+    <!-- Main Content -->
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div>
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Home /</span> TimeTable</h1>
+        </div>
+        
+        <!-- timetable List -->
+         
+        <div class="flex flex-col py-8">
+            <div class="-m-1.5 overflow-x-auto">
+                <div class="p-1.5 min-w-full inline-block align-middle">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Time</th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Monday</th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Tuesday</th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Wednesday</th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Thursday</th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase border border-gray-300">Friday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 border border-gray-300">8:00 AM - 9:00 AM</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Mathematics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">English</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Biology</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Physics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Chemistry</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 border border-gray-300">9:00 AM - 10:00 AM</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Physics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Mathematics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">History</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Chemistry</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">English</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 border border-gray-300">10:00 AM - 11:00 AM</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Chemistry</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Biology</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Mathematics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">English</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">History</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 border border-gray-300">11:00 AM - 12:00 PM</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">History</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Physics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Chemistry</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Biology</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border border-gray-300">Mathematics</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+
+    </main>
+    
+    <!-- Main Content End -->
+</div>
+
+{% endblock %}

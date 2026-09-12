@@ -1,0 +1,640 @@
+{% extends 'layout/exam_officer_layout.html' %}
+{% load static %}
+
+{% block title %}Upload Results - {{ course.code }}{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">{{ course.code }} — {{ course.title }}</h1>
+                        <p class="text-indigo-200 text-lg">{{ course.get_semester_display }} • {{ course.credits }} Credits • {{ current_session.name }}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="printCourseResults()" class="inline-flex items-center px-5 py-2.5 bg-white text-indigo-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
+                            <i class="ti ti-printer mr-2"></i>
+                            Print Results
+                        </button>
+                        <button onclick="printScoreSheet()" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition shadow-lg">
+                            <i class="ti ti-file-spreadsheet mr-2"></i>
+                            Print Score Sheet
+                        </button>
+                        <a href="{% url 'accounts:exam_officer_select_course' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
+                            <i class="ti ti-arrow-left mr-2"></i>
+                            Back to Courses
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Students</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                        </div>
+                        <div class="p-2.5 bg-indigo-100 rounded-lg">
+                            <i class="ti ti-users text-xl text-indigo-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Registered</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ registered_count }}/{{ total_students }}</p>
+                        </div>
+                        <div class="p-2.5 bg-blue-100 rounded-lg">
+                            <i class="ti ti-clipboard-check text-xl text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Results Entered</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ results_completed }}/{{ total_students }}</p>
+                        </div>
+                        <div class="p-2.5 bg-green-100 rounded-lg">
+                            <i class="ti ti-check text-xl text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Grading Scale</p>
+                            <p class="text-xs text-gray-600 mt-1">Test: <strong>{{ max_test }}</strong> marks • Exam: <strong>{{ max_exam }}</strong> marks</p>
+                        </div>
+                        <div class="p-2.5 bg-amber-100 rounded-lg">
+                            <i class="ti ti-calculator text-xl text-amber-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Entry Form -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="ti ti-edit mr-2 text-indigo-500"></i>
+                        Enter Student Scores
+                    </h2>
+                    <div class="flex items-center gap-2 text-xs flex-wrap">
+                        {% if dominant_type == 'nd' %}
+                        <span class="px-2 py-1 rounded bg-green-100 text-green-700 font-medium">A: 75+</span>
+                        <span class="px-2 py-1 rounded bg-green-50 text-green-600 font-medium">AB: 70-74</span>
+                        <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium">B: 65-69</span>
+                        <span class="px-2 py-1 rounded bg-blue-50 text-blue-600 font-medium">BC: 60-64</span>
+                        <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-700 font-medium">C: 55-59</span>
+                        <span class="px-2 py-1 rounded bg-yellow-50 text-yellow-600 font-medium">CD: 50-54</span>
+                        <span class="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium">D: 45-49</span>
+                        <span class="px-2 py-1 rounded bg-red-100 text-red-700 font-medium">E: 40-44</span>
+                        <span class="px-2 py-1 rounded bg-red-200 text-red-800 font-medium">F: 0-39</span>
+                        {% else %}
+                        <span class="px-2 py-1 rounded bg-green-100 text-green-700 font-medium">A: 70-100</span>
+                        <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium">B: 60-69</span>
+                        <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-700 font-medium">C: 50-59</span>
+                        <span class="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium">D: 45-49</span>
+                        <span class="px-2 py-1 rounded bg-red-100 text-red-700 font-medium">E: 40-44</span>
+                        <span class="px-2 py-1 rounded bg-red-200 text-red-800 font-medium">F: 0-39</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S/N</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matric No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Registered</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Test ({{ max_test }})</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Exam ({{ max_exam }})</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for item in students_data %}
+                                <tr class="hover:bg-indigo-50/30 transition {% if item.has_result %}bg-green-50/30{% endif %}">
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap">
+                                        <span class="text-sm font-medium text-gray-900">{{ item.student.user.id_number }}</span>
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap">
+                                        <span class="text-sm text-gray-800">{{ item.student.user.get_full_name }}</span>
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-lg bg-gray-100 text-gray-700">{{ item.student.current_level.display_name }}</span>
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        {% if item.is_registered %}
+                                        <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">✅ Yes</span>
+                                        {% else %}
+                                        <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">❌ No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        <input type="number" name="test_{{ item.student.id }}" value="{{ item.test_score }}" min="0" max="{{ item.max_test }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="test" data-programme="{{ item.programme_type }}">
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        <input type="number" name="exam_{{ item.student.id }}" value="{{ item.exam_score }}" min="0" max="{{ item.max_exam }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="exam" data-programme="{{ item.programme_type }}">
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        <span id="total_{{ item.student.id }}" class="text-sm font-semibold text-gray-900">{% if item.total_score %}{{ item.total_score }}{% else %}—{% endif %}</span>
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        <span id="grade_{{ item.student.id }}" class="grade-badge {% if item.grade == 'A' %}bg-green-100 text-green-800{% elif item.grade == 'B' %}bg-blue-100 text-blue-800{% elif item.grade == 'C' %}bg-yellow-100 text-yellow-800{% elif item.grade == 'D' %}bg-orange-100 text-orange-800{% elif item.grade == 'E' %}bg-red-100 text-red-700{% elif item.grade == 'F' %}bg-red-200 text-red-900{% else %}bg-gray-100 text-gray-500{% endif %}">{% if item.grade %}{{ item.grade }}{% else %}—{% endif %}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="px-6 py-12 text-center">
+                                        <p class="text-gray-500">No students found for this course.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if students_data %}
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                        <p class="text-sm text-gray-600">
+                            <strong>{{ results_completed }}</strong> of <strong>{{ total_students }}</strong> results entered
+                        </p>
+                        <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-lg">
+                            <i class="ti ti-check mr-2"></i>
+                            Save Results
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<style>
+.grade-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+</style>
+
+<!-- Live calculation script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.score-input');
+
+    function calculateGrade(total, programmeType) {
+        if (programmeType === 'nd') {
+            if (total >= 75) return 'A';
+            if (total >= 70) return 'AB';
+            if (total >= 65) return 'B';
+            if (total >= 60) return 'BC';
+            if (total >= 55) return 'C';
+            if (total >= 50) return 'CD';
+            if (total >= 45) return 'D';
+            if (total >= 40) return 'E';
+            return 'F';
+        } else {
+            if (total >= 70) return 'A';
+            if (total >= 60) return 'B';
+            if (total >= 50) return 'C';
+            if (total >= 45) return 'D';
+            if (total >= 40) return 'E';
+            return 'F';
+        }
+    }
+
+    function getGradeClasses(grade) {
+        const map = {
+            'A': 'bg-green-100 text-green-800',
+            'AB': 'bg-green-50 text-green-600',
+            'B': 'bg-blue-100 text-blue-800',
+            'BC': 'bg-blue-50 text-blue-600',
+            'C': 'bg-yellow-100 text-yellow-800',
+            'CD': 'bg-yellow-50 text-yellow-600',
+            'D': 'bg-orange-100 text-orange-800',
+            'E': 'bg-red-100 text-red-700',
+            'F': 'bg-red-200 text-red-900'
+        };
+        return map[grade] || 'bg-gray-100 text-gray-500';
+    }
+
+    inputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+            const studentId = this.dataset.student;
+            const row = this.closest('tr');
+            const testInput = row.querySelector('[data-type="test"]');
+            const examInput = row.querySelector('[data-type="exam"]');
+
+            const testVal = parseFloat(testInput.value) || 0;
+            const examVal = parseFloat(examInput.value) || 0;
+            const total = testVal + examVal;
+
+            const totalEl = document.getElementById('total_' + studentId);
+            const gradeEl = document.getElementById('grade_' + studentId);
+
+            if (testVal > 0 || examVal > 0) {
+                totalEl.textContent = total.toFixed(1);
+                const grade = calculateGrade(total, this.dataset.programme);
+                gradeEl.textContent = grade;
+                gradeEl.className = 'grade-badge ' + getGradeClasses(grade);
+            } else {
+                totalEl.textContent = '—';
+                gradeEl.textContent = '—';
+                gradeEl.className = 'grade-badge bg-gray-100 text-gray-500';
+            }
+        });
+    });
+});
+
+function printCourseResults() {
+    const rows = document.querySelectorAll('tbody tr');
+    let rowsHTML = '';
+    let sn = 1;
+
+    rows.forEach(row => {
+        const idNumber = row.querySelector('td:nth-child(2) span').textContent.trim();
+        const testScore = row.querySelector('[data-type="test"]').value || '0';
+        const examScore = row.querySelector('[data-type="exam"]').value || '0';
+        const totalScore = row.querySelector('td:nth-child(8) span').textContent.trim();
+        const grade = row.querySelector('td:nth-child(9) span').textContent.trim();
+        
+        // Only include if a score exists or total is calculated
+        if (totalScore && totalScore !== '—' && totalScore !== '0.0') {
+            rowsHTML += `
+                <tr>
+                    <td>${sn++}</td>
+                    <td>${idNumber}</td>
+                    <td style="text-align: center;">${testScore}</td>
+                    <td style="text-align: center;">${examScore}</td>
+                    <td style="text-align: center; font-weight: bold;">${totalScore}</td>
+                    <td style="text-align: center; font-weight: bold;">${grade}</td>
+                </tr>
+            `;
+        }
+    });
+
+    if (sn === 1) {
+        alert('No results found to print.');
+        return;
+    }
+
+    const courseCode = "{{ course.code }}";
+    const courseTitle = "{{ course.title }}";
+    const academicSession = "{{ current_session.name }}";
+    const semester = "{{ course.get_semester_display }}";
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    
+    const printContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Course Result List - ${courseCode}</title>
+            <style>
+                @page { size: A4; margin: 15mm 18mm; }
+                @media print {
+                    html, body { width: 210mm; margin: 0; padding: 0; }
+                    .no-print { display: none !important; }
+                }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-size: 13px;
+                    line-height: 1.4;
+                    color: #000;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: white;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                    border-bottom: 3px double #000;
+                    padding-bottom: 15px;
+                }
+                .header img {
+                    width: 70px;
+                    height: 70px;
+                    object-fit: cover;
+                    margin-bottom: 8px;
+                }
+                .header h1 {
+                    font-size: 22px;
+                    font-style: italic;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                }
+                .header h2 {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 2px;
+                    text-transform: uppercase;
+                }
+                .sub-header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .sub-header h3 {
+                    font-size: 15px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    text-decoration: underline;
+                    margin-bottom: 6px;
+                }
+                .sub-header p {
+                    font-size: 12px;
+                    color: #444;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    border: 1px solid #333;
+                    padding: 8px 12px;
+                    text-align: left;
+                    font-size: 12px;
+                }
+                th {
+                    background: #e8e8e8;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+                .footer {
+                    margin-top: 40px;
+                    padding-top: 15px;
+                    border-top: 1px solid #ccc;
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    color: #666;
+                }
+                .print-btn {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 20px;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    cursor: pointer;
+                    z-index: 1000;
+                }
+            </style>
+        </head>
+        <body>
+            <button class="print-btn no-print" onclick="window.print()">Print List</button>
+
+            <div class="header">
+                <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo">
+                <h1>Almora Polytechnic Pantisawa</h1>
+                <h2>Course Result Sheet</h2>
+                <p>${courseCode}: ${courseTitle}</p>
+            </div>
+
+            <div class="sub-header">
+                <h3>Students Result List</h3>
+                <p>Academic Session: <strong>${academicSession}</strong> | Semester: <strong>${semester}</strong> | Date: <strong>${today}</strong></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S/N</th>
+                        <th>MATRIC NUMBER</th>
+                        <th style="width: 80px; text-align: center;">TEST</th>
+                        <th style="width: 80px; text-align: center;">EXAM</th>
+                        <th style="width: 100px; text-align: center;">TOTAL</th>
+                        <th style="width: 80px; text-align: center;">GRADE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHTML}
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <span>Result generated by Exam Officer</span>
+                <span>Date: ${today}</span>
+                <span>Total: ${sn-1} record(s)</span>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+
+function printScoreSheet() {
+    const rows = document.querySelectorAll('tbody tr');
+    let rowsHTML = '';
+    let sn = 1;
+
+    rows.forEach(row => {
+        const idCell = row.querySelector('td:nth-child(2) span');
+        const nameCell = row.querySelector('td:nth-child(3) span');
+        if (!idCell) return;
+
+        const idNumber = idCell.textContent.trim();
+
+        rowsHTML += `
+            <tr>
+                <td style="text-align:center;">${sn++}</td>
+                <td>${idNumber}</td>
+                <td style="text-align:center;">&nbsp;</td>
+                <td style="text-align:center;">&nbsp;</td>
+                <td style="text-align:center;">&nbsp;</td>
+                <td style="text-align:center;">&nbsp;</td>
+            </tr>
+        `;
+    });
+
+    if (sn === 1) {
+        alert('No students found.');
+        return;
+    }
+
+    const courseCode    = "{{ course.code }}";
+    const courseTitle   = "{{ course.title }}";
+    const semester      = "{{ course.get_semester_display }}";
+    const academicSession = "{{ current_session.name }}";
+    const maxTest       = "{{ max_test }}";
+    const maxExam       = "{{ max_exam }}";
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+
+    const printContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Score Sheet - ${courseCode}</title>
+            <style>
+                @page { size: A4; margin: 15mm 18mm; }
+                @media print {
+                    html, body { width: 210mm; margin: 0; padding: 0; }
+                    .no-print { display: none !important; }
+                }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-size: 13px;
+                    line-height: 1.4;
+                    color: #000;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: white;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                    border-bottom: 3px double #000;
+                    padding-bottom: 15px;
+                }
+                .header img {
+                    width: 70px;
+                    height: 70px;
+                    object-fit: cover;
+                    margin-bottom: 8px;
+                }
+                .header h1 {
+                    font-size: 22px;
+                    font-style: italic;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                }
+                .header h2 {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 2px;
+                    text-transform: uppercase;
+                }
+                .sub-header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .sub-header h3 {
+                    font-size: 15px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    text-decoration: underline;
+                    margin-bottom: 6px;
+                }
+                .sub-header p { font-size: 12px; color: #444; }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    border: 1px solid #333;
+                    padding: 9px 12px;
+                    text-align: left;
+                    font-size: 12px;
+                }
+                th {
+                    background: #e8e8e8;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+                tbody tr { height: 32px; }
+                .footer {
+                    margin-top: 40px;
+                    padding-top: 15px;
+                    border-top: 1px solid #ccc;
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    color: #666;
+                }
+                .print-btn {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 20px;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    cursor: pointer;
+                    z-index: 1000;
+                }
+            </style>
+        </head>
+        <body>
+            <button class="print-btn no-print" onclick="window.print()">Print Sheet</button>
+
+            <div class="header">
+                <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo">
+                <h1>Almora Polytechnic Pantisawa</h1>
+                <h2>Score Sheet</h2>
+                <p>${courseCode}: ${courseTitle}</p>
+            </div>
+
+            <div class="sub-header">
+                <h3>Student Score Sheet</h3>
+                <p>Academic Session: <strong>${academicSession}</strong> &nbsp;|&nbsp; Semester: <strong>${semester}</strong> &nbsp;|&nbsp; Date: <strong>${today}</strong></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:50px; text-align:center;">S/N</th>
+                        <th style="width:220px;">MATRIC NUMBER</th>
+                        <th style="width:80px; text-align:center;">TEST<br><small>(/${maxTest})</small></th>
+                        <th style="width:80px; text-align:center;">EXAM<br><small>(/${maxExam})</small></th>
+                        <th style="width:80px; text-align:center;">TOTAL<br><small>(/100)</small></th>
+                        <th style="width:70px; text-align:center;">GRADE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHTML}
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <span>Prepared by Exam Officer</span>
+                <span>Date: ${today}</span>
+                <span>Total Students: ${sn - 1}</span>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+</script>
+{% endblock %}

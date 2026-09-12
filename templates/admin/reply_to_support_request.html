@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reply to Support Request - Almora Polytechnic Pantisawa{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{% url 'dashboard:manage_support_requests' %}" 
+               class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                <i class="ti ti-arrow-left mr-2"></i>
+                Back to Support Requests
+            </a>
+        </div>
+
+        <!-- Support Request Info -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h1 class="text-2xl font-bold text-gray-900">Reply to Support Request</h1>
+                <div class="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+                    <span>From: {{ support_request.user.get_full_name }}</span>
+                    <span>•</span>
+                    <span>{{ support_request.created_at|date:"F d, Y at g:i A" }}</span>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Subject</h3>
+                <p class="text-gray-700 mb-4">{{ support_request.subject }}</p>
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Original Message</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ support_request.message }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reply Form -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Your Response</h2>
+            </div>
+            
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label for="{{ form.reply.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Reply Message *
+                    </label>
+                    {{ form.reply }}
+                    {% if form.reply.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.reply.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'dashboard:manage_support_requests' %}" 
+                       class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="ti ti-send mr-2"></i>
+                        Send Reply
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

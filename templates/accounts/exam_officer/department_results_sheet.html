@@ -1,0 +1,231 @@
+{% extends 'layout/exam_officer_layout.html' %}
+{% load static %}
+
+{% block title %}Results Sheet{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl no-print">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Results Sheet</h1>
+                        <p class="text-indigo-200 text-lg">Passed &amp; failed courses per student by department</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        {% if filter_department and filter_level %}
+                            <button onclick="window.print()" class="inline-flex items-center px-5 py-2.5 bg-white text-indigo-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
+                                <i class="ti ti-printer mr-2"></i>
+                                Print Sheet
+                            </button>
+                        {% else %}
+                            <button disabled class="inline-flex items-center px-5 py-2.5 bg-white/30 text-white/60 rounded-xl font-semibold cursor-not-allowed shadow-lg">
+                                <i class="ti ti-printer mr-2"></i>
+                                Print Sheet
+                            </button>
+                            <span class="text-xs text-indigo-200 flex items-center gap-1">
+                                <i class="ti ti-info-circle text-sm"></i>
+                                Select department &amp; level to enable printing
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 no-print">
+                <form method="GET" class="flex flex-wrap items-end gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Academic Session</label>
+                        <select name="session" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            {% for session in available_sessions %}
+                            <option value="{{ session.id }}" {% if session.id == selected_session.id %}selected{% endif %}>
+                                {{ session.name }} Session
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department <span class="text-red-500">*</span></label>
+                        <select name="department" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            <option value="">— Select Department —</option>
+                            {% for dept in available_departments %}
+                            <option value="{{ dept.id }}" {% if dept.id|stringformat:"s" == filter_department %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Level <span class="text-red-500">*</span></label>
+                        <select name="level" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            <option value="">— Select Level —</option>
+                            {% for level in available_levels %}
+                            <option value="{{ level.id }}" {% if level.id|stringformat:"s" == filter_level %}selected{% endif %}>
+                                {{ level.display_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                        <select name="semester" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            <option value="both" {% if filter_semester == 'both' %}selected{% endif %}>Both Semesters</option>
+                            <option value="first" {% if filter_semester == 'first' %}selected{% endif %}>1st Semester</option>
+                            <option value="second" {% if filter_semester == 'second' %}selected{% endif %}>2nd Semester</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
+                            <i class="ti ti-filter mr-1.5"></i> Load
+                        </button>
+                        {% if filter_department or filter_level %}
+                        <a href="?session={{ selected_session.id }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+                            Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Instruction card (shown when filters not set) -->
+            {% if not filter_department or not filter_level %}
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 flex items-start gap-4 no-print">
+                <div class="p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
+                    <i class="ti ti-info-circle text-2xl text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-blue-800 mb-1">Select filters to load results</p>
+                    <p class="text-sm text-blue-600">Choose a <strong>department</strong> and <strong>level</strong> above, then click <strong>Load</strong> to view the results sheet for that group of students.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Print Header (hidden on screen, visible on print only) -->
+            <div class="print-header" style="display:none;">
+                <div style="text-align:center; margin-bottom:14px;">
+                    <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo" style="width:75px;height:75px;display:block;margin:0 auto 8px;">
+                    <div style="font-size:21px;font-weight:bold;text-transform:uppercase;font-family:'Times New Roman',serif;">Almora Polytechnic Pantisawa</div>
+                    <div style="font-size:12px;font-style:italic;margin-top:2px;font-family:'Times New Roman',serif;">...Centre of Excellence</div>
+                    <div style="font-size:11px;color:#555;margin-top:3px;font-family:'Times New Roman',serif;">Pantisawa, Nigeria</div>
+                </div>
+                <hr style="border:none;border-top:2px solid #000;margin:8px 0 3px;">
+                <hr style="border:none;border-top:1px solid #000;margin-bottom:12px;">
+                <div style="text-align:center;margin-bottom:5px;">
+                    <span style="font-size:16px;font-weight:bold;text-transform:uppercase;font-family:'Times New Roman',serif;letter-spacing:1px;">Results Sheet</span>
+                </div>
+                <div style="text-align:center;font-size:11px;color:#333;margin-bottom:12px;font-family:'Times New Roman',serif;">
+                    {% if selected_department %}Department: <strong>{{ selected_department.name }}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;{% endif %}
+                    {% if selected_level %}Level: <strong>{{ selected_level.display_name }}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;{% endif %}
+                    Semester: <strong>{% if filter_semester == 'first' %}1st Semester{% elif filter_semester == 'second' %}2nd Semester{% else %}Both Semesters{% endif %}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+                    Session: <strong>{{ selected_session.name }}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+                    Printed: <strong>{% now "d F, Y" %}</strong>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            {% if filter_department and filter_level %}
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden print-area">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 no-print">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="ti ti-table-export mr-2 text-indigo-500"></i>
+                            {% if selected_department %}{{ selected_department.name }}{% endif %}
+                            {% if selected_level %} — {{ selected_level.display_name }}{% endif %}
+                        </h2>
+                        <span class="text-sm text-gray-500">{{ total_students }} student{{ total_students|pluralize }}</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">S/N</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Number</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider no-print">Student Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider bg-green-50">Passed Courses</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider bg-red-50">Failed Courses</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for row in student_results %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-500">{{ forloop.counter }}</td>
+                                <td class="px-4 py-3 text-sm font-mono text-gray-800 whitespace-nowrap">{{ row.student.user.id_number }}</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap no-print">{{ row.student.user.get_full_name }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 bg-green-50/30">{{ row.passed }}</td>
+                                <td class="px-4 py-3 text-sm font-medium bg-red-50/30
+                                    {% if row.failed == 'NIL' %}text-gray-400{% else %}text-red-700{% endif %}">
+                                    {{ row.failed }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                                        <i class="ti ti-users-group text-2xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-900 mb-1">No Students Found</p>
+                                    <p class="text-gray-500 text-sm">No students are registered for this department and level in the selected session.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+<style>
+@media print {
+    @page { margin: 12mm 15mm; size: landscape; }
+
+    body * { visibility: hidden; }
+
+    .print-header,
+    .print-header * { visibility: visible !important; display: revert !important; }
+
+    .print-area, .print-area * { visibility: visible; }
+
+    .print-header {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0 15mm;
+        box-sizing: border-box;
+    }
+    .print-area {
+        position: absolute;
+        left: 0;
+        top: 240px;
+        width: 100%;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        border-radius: 0 !important;
+    }
+
+    .no-print { display: none !important; }
+
+    .print-area thead { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-area th, .print-area td { font-size: 11px !important; padding: 5px 8px !important; }
+
+    /* keep passed/failed columns readable (name col hidden = shifts to 3 & 4) */
+    .print-area td:nth-child(3) { color: #166534 !important; }
+    .print-area td:nth-child(4) { color: #991b1b !important; }
+    .print-area td:nth-child(4).text-gray-400 { color: #6b7280 !important; }
+}
+</style>
+{% endblock %}

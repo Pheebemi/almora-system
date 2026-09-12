@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python manage.py:*)",
+      "Bash(xargs grep:*)",
+      "Bash(Select-Object -First 30)"
+    ]
+  }
+}

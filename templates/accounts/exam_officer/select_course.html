@@ -1,0 +1,217 @@
+{% extends 'layout/exam_officer_layout.html' %}
+{% load static %}
+
+{% block title %}Select Course - Upload Results{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Upload Results</h1>
+                        <p class="text-indigo-200 text-lg">Select a course to upload student results</p>
+                    </div>
+                    <a href="{% url 'accounts:exam_officer_dashboard' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
+                        <i class="ti ti-arrow-left mr-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <form method="GET" id="filterForm">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="ti ti-filter mr-2 text-indigo-500"></i>
+                            Filter Courses
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Session -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Session</label>
+                                <select name="session" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                                    <option value="">Current Session</option>
+                                    {% for sess in available_sessions %}
+                                    <option value="{{ sess.id }}" {% if filter_session == sess.id|stringformat:"d" %}selected{% endif %}>{{ sess.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Semester -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Semester</label>
+                                <select name="semester" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                                    <option value="">All Semesters</option>
+                                    <option value="first" {% if filter_semester == "first" %}selected{% endif %}>First Semester</option>
+                                    <option value="second" {% if filter_semester == "second" %}selected{% endif %}>Second Semester</option>
+                                </select>
+                            </div>
+                            <!-- Programme -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Programme</label>
+                                <select name="programme" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                                    <option value="">All Programmes</option>
+                                    {% for ptype in assigned_types %}
+                                    <option value="{{ ptype }}" {% if filter_programme == ptype %}selected{% endif %}>{{ ptype|upper }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Level -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Level</label>
+                                <select name="level" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                                    <option value="">All Levels</option>
+                                    {% for lvl in available_levels %}
+                                    <option value="{{ lvl.id }}" {% if filter_level == lvl.id|stringformat:"d" %}selected{% endif %}>{{ lvl.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Search Bar -->
+                        <div class="flex items-end gap-2 mt-1">
+                            <div class="flex-1">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Search by Code or Title</label>
+                                <input type="text" name="q" value="{{ search_query }}" placeholder="e.g. ECO 101 or Microeconomics..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" />
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                                <i class="ti ti-search mr-1.5"></i> Go
+                            </button>
+                            {% if filter_semester or filter_programme or filter_level or search_query %}
+                            <a href="?session={{ selected_session.id }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+                                <i class="ti ti-x mr-1"></i> Clear
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Courses List -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-800">Courses ({{ paginator.count }})</h2>
+                    {% if paginator.num_pages > 1 %}
+                    <span class="text-sm text-gray-500">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    {% endif %}
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Registered</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Results</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for item in page_obj %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-semibold text-gray-900">{{ item.course.code }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-gray-700">{{ item.course.title }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.course.get_semester_display }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">
+                                    {{ item.registered }} <span class="text-gray-400 font-normal">/ {{ item.total_eligible }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">
+                                    {{ item.results_done }} <span class="text-gray-400 font-normal">/ {{ item.total_eligible }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if item.is_complete %}
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Complete</span>
+                                    {% elif item.results_done > 0 %}
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">In Progress</span>
+                                    {% else %}
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if item.total_eligible > 0 %}
+                                    <a href="{% url 'accounts:exam_officer_upload_results' item.course.id %}?session={{ selected_session.id }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition">
+                                        <i class="ti ti-edit mr-1"></i>
+                                        {% if item.is_complete %}Edit{% elif item.results_done > 0 %}Continue{% else %}Upload{% endif %}
+                                    </a>
+                                    {% else %}
+                                    <span class="text-xs text-gray-400 italic">No eligible students</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center text-gray-500">
+                                        <i class="ti ti-filter text-4xl text-gray-300 mb-4"></i>
+                                        {% if filter_semester or filter_programme or filter_level or search_query %}
+                                        <p class="font-medium text-gray-700 mb-1">No courses found</p>
+                                        <p class="text-sm">No courses match your selected filters or search.</p>
+                                        {% else %}
+                                        <p class="font-medium text-gray-700 mb-1">Use filters or search to load courses</p>
+                                        <p class="text-sm">Select a Semester, Programme, or Level above, or search by course code/title.</p>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                {% if paginator.num_pages > 1 %}
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <p class="text-sm text-gray-600">
+                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ paginator.count }} courses
+                    </p>
+                    <nav class="flex items-center gap-1">
+                        {% if page_obj.has_previous %}
+                        <a href="?page=1{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="First page">
+                            <i class="ti ti-chevrons-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Previous page">
+                            <i class="ti ti-chevron-left"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <span class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg">{{ num }}</span>
+                            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                            <a href="?page={{ num }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                               class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                {{ num }}
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Next page">
+                            <i class="ti ti-chevron-right"></i>
+                        </a>
+                        <a href="?page={{ paginator.num_pages }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Last page">
+                            <i class="ti ti-chevrons-right"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

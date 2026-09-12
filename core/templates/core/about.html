@@ -1,0 +1,350 @@
+{% extends 'layout/home_layout.html' %}
+{% load static %}
+
+{% block title %}About Us - Almora Polytechnic Pantisawa{% endblock %}
+
+{% block layout %}
+<!-- Hero Section -->
+<section class="relative py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                About
+                <span class="text-blue-600 block">Almora Polytechnic Pantisawa</span>
+            </h1>
+            <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
+                Discover our rich history, mission, and commitment to excellence in education. We're building the future, one student at a time.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#mission" class="btn-primary">
+                    <i class="fas fa-bullseye mr-2"></i>
+                    Our Mission
+                </a>
+                <a href="#history" class="btn-secondary">
+                    <i class="fas fa-history mr-2"></i>
+                    Our History
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission & Vision Section -->
+<section id="mission" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Mission & Vision</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Guiding principles that drive our commitment to educational excellence and student success.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Mission -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 hover:shadow-xl transition-all duration-300">
+                    <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-bullseye text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-4">Our Mission</h3>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        To empower students with the knowledge, skills, and values needed to succeed in a rapidly changing world. We are committed to fostering critical thinking, creativity, and a lifelong love of learning.
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Quality education for all</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Character development</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Community engagement</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vision -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 hover:shadow-xl transition-all duration-300">
+                    <div class="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-eye text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-4">Our Vision</h3>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        To be a leading institution of higher learning, recognized nationally and internationally for our innovative teaching methods, research excellence, and commitment to producing well-rounded, successful graduates.
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-green-600 mr-3"></i>
+                            <span class="text-gray-700">National recognition</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-green-600 mr-3"></i>
+                            <span class="text-gray-700">Innovation leadership</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-green-600 mr-3"></i>
+                            <span class="text-gray-700">Global impact</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Values Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Core Values</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    The fundamental principles that guide everything we do and shape our college culture.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Excellence -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-trophy text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Excellence</h3>
+                    <p class="text-gray-600">
+                        We strive for excellence in all aspects of education, from teaching and learning to research and community service.
+                    </p>
+                </div>
+
+                <!-- Integrity -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-shield-alt text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Integrity</h3>
+                    <p class="text-gray-600">
+                        We uphold the highest standards of honesty, ethics, and moral character in all our actions and decisions.
+                    </p>
+                </div>
+
+                <!-- Innovation -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="bg-purple-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-lightbulb text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Innovation</h3>
+                    <p class="text-gray-600">
+                        We embrace creativity and new ideas, encouraging innovative approaches to learning and problem-solving.
+                    </p>
+                </div>
+
+                <!-- Community -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-users text-3xl text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Community</h3>
+                    <p class="text-gray-600">
+                        We foster a supportive environment where diversity is celebrated and everyone feels valued and respected.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- History & Timeline Section -->
+<section id="history" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Journey</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    From humble beginnings to becoming a leading educational institution - discover our remarkable story.
+                </p>
+            </div>
+            
+            <div class="relative">
+                <!-- Timeline Line -->
+                <div class="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-blue-200"></div>
+                
+                <!-- Timeline Items -->
+                <div class="space-y-12">
+                    <!-- 2015 -->
+                    <div class="relative flex items-center">
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg"></div>
+                        <div class="w-5/12 pr-8 text-right">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">2015</h3>
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Foundation Laid</h4>
+                            <p class="text-gray-600">Almora Polytechnic Pantisawa was established with a vision to provide quality education in Pantisawa.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 2017 -->
+                    <div class="relative flex items-center justify-end">
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg"></div>
+                        <div class="w-5/12 pl-8 text-left">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">2017</h3>
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">First Graduating Class</h4>
+                            <p class="text-gray-600">We celebrated our first graduating class, marking a significant milestone in our educational journey.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 2019 -->
+                    <div class="relative flex items-center">
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg"></div>
+                        <div class="w-5/12 pr-8 text-right">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">2019</h3>
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Program Expansion</h4>
+                            <p class="text-gray-600">Expanded our academic programs and introduced new courses to meet growing student demands.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 2021 -->
+                    <div class="relative flex items-center justify-end">
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg"></div>
+                        <div class="w-5/12 pl-8 text-left">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">2021</h3>
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Digital Transformation</h4>
+                            <p class="text-gray-600">Embraced technology and launched our e-learning platform to enhance student experience.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 2024 -->
+                    <div class="relative flex items-center">
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg"></div>
+                        <div class="w-5/12 pr-8 text-right">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">2024</h3>
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Future Forward</h4>
+                            <p class="text-gray-600">Continuing to innovate and expand, preparing students for the challenges of tomorrow.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-20 bg-blue-600">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-4">By The Numbers</h2>
+                <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                    Our impact in numbers - showcasing the scale and success of our educational mission.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">500+</div>
+                    <div class="text-blue-100 text-lg">Students Enrolled</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">50+</div>
+                    <div class="text-blue-100 text-lg">Expert Faculty</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">15+</div>
+                    <div class="text-blue-100 text-lg">Academic Programs</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">95%</div>
+                    <div class="text-blue-100 text-lg">Graduation Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Leadership Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Leadership</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Meet the dedicated leaders who guide our institution and shape the future of education.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Principal -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                    <div class="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-tie text-4xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Dr. Sarah Johnson</h3>
+                    <p class="text-blue-600 font-semibold mb-3">Principal</p>
+                    <p class="text-gray-600 text-sm">
+                        Leading our institution with over 15 years of experience in educational leadership and administration.
+                    </p>
+                </div>
+
+                <!-- Vice Principal -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                    <div class="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-graduate text-4xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Prof. Michael Chen</h3>
+                    <p class="text-green-600 font-semibold mb-3">Vice Principal</p>
+                    <p class="text-gray-600 text-sm">
+                        Overseeing academic affairs and ensuring the highest standards of educational excellence.
+                    </p>
+                </div>
+
+                <!-- Academic Director -->
+                <div class="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                    <div class="bg-purple-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-chalkboard-teacher text-4xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Dr. Emily Rodriguez</h3>
+                    <p class="text-purple-600 font-semibold mb-3">Academic Director</p>
+                    <p class="text-gray-600 text-sm">
+                        Driving curriculum development and maintaining our commitment to innovative teaching methods.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold text-white mb-6">Join Our Community</h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            Be part of our mission to shape the future through quality education. Discover how you can contribute to our growing community.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'core:landing_page' %}" class="btn-white">
+                <i class="fas fa-home mr-2"></i>
+                Explore Programs
+            </a>
+            <a href="{% url 'core:contact_page' %}" class="btn-outline-white">
+                <i class="fas fa-envelope mr-2"></i>
+                Contact Us
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .btn-primary {
+        @apply inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-secondary {
+        @apply inline-block bg-white text-blue-600 border-2 border-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-white {
+        @apply inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-outline-white {
+        @apply inline-block bg-transparent text-white border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold mb-1">Edit Profile</h1>
+                        <p class="text-white/90">Update your personal information</p>
+                    </div>
+                    <a href="{% url 'accounts:student_profile' %}" class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur text-white rounded-lg font-medium hover:bg-white/30 transition border border-white/30">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to Profile
+                    </a>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="space-y-2">
+                {% for message in messages %}
+                <div class="rounded-xl px-4 py-3 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-amber-50 text-amber-800 border border-amber-200{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Profile Picture Card -->
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            Profile Photo <span class="text-red-500 ml-1">*</span>
+                        </h2>
+                    </div>
+                    <div class="p-6 flex flex-col sm:flex-row sm:items-center gap-6">
+                        <div class="flex-shrink-0">
+                            {% if user.profile_picture %}
+                            <img class="w-24 h-24 rounded-2xl object-cover border-2 border-gray-200 shadow-inner" src="{{ user.profile_picture.url }}" alt="Profile">
+                            {% else %}
+                            <div class="w-24 h-24 rounded-2xl bg-indigo-100 flex items-center justify-center border-2 border-indigo-200">
+                                <span class="text-3xl font-bold text-indigo-500">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <label class="block">
+                                <span class="sr-only">Choose profile photo</span>
+                                <input type="file" name="profile_picture" accept="image/*" {% if not user.profile_picture %}required{% endif %}
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"/>
+                            </label>
+                            <p class="mt-2 text-sm text-gray-500">JPG, PNG or GIF. Max size 1MB.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            Personal Information
+                        </h2>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" value="{{ user.email }}" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}" required
+                                placeholder="e.g. 08012345678"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth <span class="text-red-500">*</span></label>
+                            <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender <span class="text-red-500">*</span></label>
+                            <select name="gender" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                                <option value="">Select Gender</option>
+                                <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
+                                <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address & Location -->
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Address & Location
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">State of Origin <span class="text-red-500">*</span></label>
+                            <select name="state_of_origin" id="state" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                                <option value="">Select State</option>
+                                {% for state in states %}
+                                <option value="{{ state }}" {% if profile.state_of_origin == state %}selected{% endif %}>{{ state }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Local Government <span class="text-red-500">*</span></label>
+                            <select name="local_government" id="lga" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                                <option value="">Select LGA</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address <span class="text-red-500">*</span></label>
+                            <textarea name="permanent_address" rows="3" placeholder="Full address" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-y">{{ profile.permanent_address|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                    <a href="{% url 'accounts:student_profile' %}" class="inline-flex justify-center items-center px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    // State and LGA dynamic dropdown functionality
+    const stateSelect = document.getElementById('state');
+    const lgaSelect = document.getElementById('lga');
+
+    // Get the states data from the context (safely parse the JSON)
+    let statesData = {};
+    try {
+        statesData = JSON.parse('{{ states_lgas|escapejs }}');
+    } catch (e) {
+        console.error('Error parsing states data:', e);
+    }
+
+    // Function to populate LGA dropdown
+    function updateLGAs(selectedState) {
+        if (!lgaSelect) return; // Guard clause if element not found
+
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+
+        if (selectedState && statesData[selectedState]) {
+            statesData[selectedState].forEach(lga => {
+                const option = document.createElement('option');
+                option.value = lga;
+                option.textContent = lga;
+                lgaSelect.appendChild(option);
+            });
+        }
+
+        // Restore previously selected LGA if it exists
+        const previousLGA = '{{ profile.local_government|default:""|escapejs }}';
+        if (previousLGA && lgaSelect.querySelector(`option[value="${previousLGA}"]`)) {
+            lgaSelect.value = previousLGA;
+        }
+    }
+
+    // State select change handler
+    if (stateSelect) {
+        stateSelect.addEventListener('change', function() {
+            updateLGAs(this.value);
+        });
+    }
+
+    // Initialize LGAs if state is pre-selected
+    if (stateSelect && stateSelect.value) {
+        updateLGAs(stateSelect.value);
+    }
+</script>
+{% endblock %}

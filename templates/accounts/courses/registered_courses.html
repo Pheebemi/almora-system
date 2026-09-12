@@ -1,0 +1,310 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Registered Courses{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="font-semibold text-xl"><span class="text-slate-400">Courses /</span> Registered Courses</h1>
+                <p class="text-sm text-gray-500 mt-1">View and print your course registration records</p>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <form method="GET" id="sessionFilterForm" class="flex-1 md:flex-none">
+                    <select name="session" onchange="this.form.submit()" 
+                            class="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        {% for session in available_sessions %}
+                            <option value="{{ session.id }}" {% if session.id == selected_session_id %}selected{% endif %}>
+                                {{ session.name }} Session
+                            </option>
+                        {% empty %}
+                            <option value="">No history found</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <button onclick="printCourseForm()" 
+                        class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i class="ti ti-printer text-lg"></i>
+                    Print Form
+                </button>
+                <a href="{% url 'accounts:register_courses' %}" 
+                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition shadow-sm">
+                    Register New
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Summary Card -->
+            <div class="p-6 bg-gray-50 border-b">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Total Courses</h3>
+                        <p class="text-2xl font-semibold">{{ registrations|length }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Total Credits</h3>
+                        <p class="text-2xl font-semibold">{{ total_credits }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Academic Session</h3>
+                        <p class="text-lg font-semibold">{% if academic_session %}{{ academic_session.name }}{% else %}—{% endif %}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                        <p class="text-lg font-semibold">{{ registration_level }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- First Semester Courses -->
+            {% if first_semester_regs %}
+            <div class="p-6 border-b" id="first-sem-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-blue-900">First Semester Courses</h3>
+                    <span class="text-sm text-gray-600">{{ first_semester_regs|length }} courses • {{ first_semester_credits }} credits</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-blue-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for reg in first_semester_regs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ reg.course.code }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ reg.course.title }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.course.credits }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if reg.status == 'registered' %}bg-green-100 text-green-800
+                                        {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ reg.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.registration_date|date:"M d, Y" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Second Semester Courses -->
+            {% if second_semester_regs %}
+            <div class="p-6" id="second-sem-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-green-900">Second Semester Courses</h3>
+                    <span class="text-sm text-gray-600">{{ second_semester_regs|length }} courses • {{ second_semester_credits }} credits</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-green-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for reg in second_semester_regs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ reg.course.code }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ reg.course.title }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.course.credits }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if reg.status == 'registered' %}bg-green-100 text-green-800
+                                        {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ reg.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.registration_date|date:"M d, Y" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not registrations %}
+            <div class="px-6 py-8 text-center text-gray-500">
+                <p class="mb-2">No registered courses found.</p>
+                <a href="{% url 'accounts:register_courses' %}" class="text-blue-600 hover:underline">
+                    Click here to register for courses
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<script>
+function printCourseForm() {
+    // Gather first semester courses
+    var firstSemCourses = [];
+    var firstSemSection = document.getElementById('first-sem-section');
+    if (firstSemSection) {
+        var firstSemRows = firstSemSection.querySelectorAll('tbody tr');
+        for (var i = 0; i < firstSemRows.length; i++) {
+            var cells = firstSemRows[i].querySelectorAll('td');
+            if (cells.length >= 3) {
+                firstSemCourses.push({
+                    code: cells[0].textContent.trim(),
+                    title: cells[1].textContent.trim(),
+                    credits: parseInt(cells[2].textContent.trim()) || 0
+                });
+            }
+        }
+    }
+
+    // Gather second semester courses
+    var secondSemCourses = [];
+    var secondSemSection = document.getElementById('second-sem-section');
+    if (secondSemSection) {
+        var secondSemRows = secondSemSection.querySelectorAll('tbody tr');
+        for (var j = 0; j < secondSemRows.length; j++) {
+            var cells2 = secondSemRows[j].querySelectorAll('td');
+            if (cells2.length >= 3) {
+                secondSemCourses.push({
+                    code: cells2[0].textContent.trim(),
+                    title: cells2[1].textContent.trim(),
+                    credits: parseInt(cells2[2].textContent.trim()) || 0
+                });
+            }
+        }
+    }
+
+    if (firstSemCourses.length === 0 && secondSemCourses.length === 0) {
+        alert('No registered courses found for this session.');
+        return;
+    }
+
+    var studentName = "{{ request.user.get_full_name|escapejs }}";
+    var idNumber = "{{ request.user.id_number|escapejs }}";
+    var department = "{{ request.user.studentprofile.department.name|escapejs }}";
+    var faculty = "{{ request.user.studentprofile.faculty.name|escapejs }}";
+    var sessionName = "{% if academic_session %}{{ academic_session.name|escapejs }}{% else %}N/A{% endif %}";
+    var level = "{{ registration_level|escapejs }}";
+    var logoUrl = "{% static 'assets/images/logos/almora.jpg' %}";
+
+    var firstSemCredits = 0;
+    for (var a = 0; a < firstSemCourses.length; a++) { firstSemCredits += firstSemCourses[a].credits; }
+    var secondSemCredits = 0;
+    for (var b = 0; b < secondSemCourses.length; b++) { secondSemCredits += secondSemCourses[b].credits; }
+
+    // Build semester table HTML
+    function buildSemesterTable(title, courses, totalCredits) {
+        if (courses.length === 0) return '';
+        var html = '<div class="semester-heading">' + title + '</div>';
+        html += '<table><thead><tr>';
+        html += '<th style="width:40px;">SN</th>';
+        html += '<th style="width:90px;">CODE</th>';
+        html += '<th>TITLE</th>';
+        html += '<th style="width:50px;">UNIT</th>';
+        html += '</tr></thead><tbody>';
+        for (var k = 0; k < courses.length; k++) {
+            html += '<tr>';
+            html += '<td class="center">' + (k + 1) + '</td>';
+            html += '<td>' + courses[k].code + '</td>';
+            html += '<td>' + courses[k].title + '</td>';
+            html += '<td class="center">' + courses[k].credits + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += '<div class="total-line">Total Unit of ' + title + ' is ' + totalCredits + '</div>';
+        return html;
+    }
+
+    var firstSemHtml = buildSemesterTable('FIRST SEMESTER', firstSemCourses, firstSemCredits);
+    var secondSemHtml = buildSemesterTable('SECOND SEMESTER', secondSemCourses, secondSemCredits);
+
+    var printWindow = window.open('', '_blank', 'width=900,height=700');
+
+    var styles = '@page { size: A4; margin: 10mm 15mm; }'
+        + ' @media print { html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; overflow: hidden; } .no-print { display: none !important; } }'
+        + ' * { margin: 0; padding: 0; box-sizing: border-box; }'
+        + ' body { font-family: "Times New Roman", Times, serif; font-size: 13px; line-height: 1.4; color: #000; max-width: 800px; margin: 0 auto; padding: 20px; background: white; }'
+        + ' .header { text-align: center; margin-bottom: 15px; }'
+        + ' .header img { width: 70px; height: 70px; display: block; margin: 0 auto 8px; }'
+        + ' .school-name { font-size: 22px; font-weight: bold; text-transform: uppercase; }'
+        + ' .faculty-name { font-size: 16px; margin-top: 2px; }'
+        + ' .dept-name { font-size: 14px; margin-top: 2px; }'
+        + ' .form-title { font-size: 14px; font-weight: bold; margin-top: 8px; }'
+        + ' .student-info { margin-bottom: 10px; border-top: 1px solid #000; padding-top: 8px; }'
+        + ' .info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 13px; }'
+        + ' .semester-heading { text-align: center; font-weight: bold; font-size: 14px; margin: 12px 0 4px; }'
+        + ' table { width: 100%; border-collapse: collapse; font-size: 12px; }'
+        + ' table th, table td { border: 1px solid #000; padding: 4px 8px; text-align: left; }'
+        + ' table th { font-weight: bold; background: #f5f5f5; text-align: center; font-size: 12px; }'
+        + ' td.center { text-align: center; }'
+        + ' .total-line { margin: 6px 0 0; font-size: 13px; }'
+        + ' .signatures { margin-top: 25px; font-size: 13px; }'
+        + ' .sig-line { margin-bottom: 12px; }'
+        + ' .sig-line span { font-weight: bold; }'
+        + ' .print-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; z-index: 1000; }'
+        + ' .print-btn:hover { background: #047857; }';
+
+    var bodyHtml = '<button class="print-btn no-print" onclick="window.print()">Print Course Form</button>'
+        + '<div class="header">'
+        + '<img src="' + logoUrl + '" alt="Logo">'
+        + '<div class="school-name">Almora Polytechnic Pantisawa</div>'
+        + '<div class="faculty-name">' + faculty + '</div>'
+        + '<div class="dept-name">(Department of ' + department + ')</div>'
+        + '<div class="form-title">STUDENT REGISTERED COURSES</div>'
+        + '</div>'
+        + '<div class="student-info">'
+        + '<div class="info-row"><div>SESSION: ' + sessionName + '</div><div>LEVEL: ' + level + '</div></div>'
+        + '<div class="info-row"><div>NAME: ' + studentName.toUpperCase() + '</div><div>ID NO: ' + idNumber + '</div></div>'
+        + '</div>'
+        + firstSemHtml
+        + secondSemHtml
+        + '<div class="signatures">'
+        + '<div class="sig-line"><span>STUDENT\'S SIGNATURE:</span> .......................................................................................................................................................................................................</div>'
+        + '<div class="sig-line"><span>HOD\'S SIGNATURE:</span> ............................................................................................................................................................................................................</div>'
+        + '<div class="sig-line"><span>REGISTRAR\'S SIGNATURE:</span> .............................................................................................................................................................................................</div>'
+        + '</div>';
+
+    var fullHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Course Form - ' + studentName + '</title><style>' + styles + '</style></head><body>' + bodyHtml + '</body></html>';
+
+    printWindow.document.write(fullHtml);
+    printWindow.document.close();
+
+    printWindow.onload = function() {
+        printWindow.focus();
+    };
+}
+</script>
+{% endblock %}

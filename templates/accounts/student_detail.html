@@ -1,0 +1,173 @@
+{% extends 'layout/staff_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Student Details - {{ student.user.get_full_name }}{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="font-semibold text-xl">
+                    <a href="{% url 'accounts:department_students' %}" class="text-slate-400 hover:text-slate-600">
+                        Department Students
+                    </a> 
+                    <span class="text-slate-400">/</span> 
+                    Student Details
+                </h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.print()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                    <i class="ti ti-printer mr-2"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <!-- Student Profile Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="md:flex">
+                <!-- Left Column - Photo and Basic Info -->
+                <div class="md:w-1/3 p-6 bg-gray-50 border-r">
+                    <div class="flex flex-col items-center">
+                        {% if student.user.profile_picture %}
+                        <img class="h-32 w-32 rounded-full object-cover" 
+                             src="{{ student.user.profile_picture.url }}" 
+                             alt="{{ student.user.get_full_name }}">
+                        {% else %}
+                        <div class="h-32 w-32 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-4xl text-blue-500">{{ student.user.first_name|first|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <h2 class="mt-4 text-xl font-bold">{{ student.user.get_full_name }}</h2>
+                        <p class="text-gray-600">{{ student.user.id_number }}</p>
+                        <span class="mt-2 px-3 py-1 text-sm font-semibold rounded-full 
+                            {% if student.user.is_active %}bg-green-100 text-green-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ student.user.is_active|yesno:"Active,Inactive" }}
+                        </span>
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">Email</h3>
+                            <p class="text-gray-900">{{ student.user.email|default:"Not provided" }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">Phone</h3>
+                            <p class="text-gray-900">{{ student.user.phone_number|default:"Not provided" }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">Gender</h3>
+                            <p class="text-gray-900">{{ student.get_gender_display }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Academic Info -->
+                <div class="md:w-2/3 p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Department</h3>
+                            <p class="text-gray-900">{{ student.department.name }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Faculty</h3>
+                            <p class="text-gray-900">{{ student.faculty.name }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                            <p class="text-gray-900">{{ student.current_level }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">CGPA</h3>
+                            <p class="text-gray-900">{{ student.cgpa }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Program</h3>
+                            <p class="text-gray-900">{{ student.get_program_display }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Admission Year</h3>
+                            <p class="text-gray-900">{{ student.admission_year }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t">
+                        <h3 class="text-lg font-semibold mb-4">Academic Summary</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-blue-600">Total Courses</h4>
+                                <p class="text-2xl font-bold text-blue-700">{{ total_courses }}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-green-600">Total Credits</h4>
+                                <p class="text-2xl font-bold text-green-700">{{ total_credits }}</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-purple-600">Current Semester</h4>
+                                <p class="text-2xl font-bold text-purple-700">{{ student.get_current_semester_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Courses -->
+        {% for semester, registrations in courses_by_semester.items %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="bg-gray-50 px-6 py-4 border-b">
+                <h2 class="text-lg font-semibold">{{ semester }}</h2>
+                <p class="text-sm text-gray-500">{{ registrations|length }} courses</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Code</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for reg in registrations %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ reg.course.code }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ reg.course.title }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ reg.course.credits }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                    {% if reg.status == 'registered' %}bg-green-100 text-green-800
+                                    {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ reg.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ reg.registration_date|date:"M d, Y" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-8 bg-white rounded-lg shadow-md">
+            <p class="text-gray-500">No courses registered yet.</p>
+        </div>
+        {% endfor %}
+    </main>
+</div>
+{% endblock %} 

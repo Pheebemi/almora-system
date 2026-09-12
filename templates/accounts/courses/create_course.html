@@ -1,0 +1,146 @@
+{% extends 'layout/staff_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Create Course{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold mb-1">Create New Course</h1>
+                        <p class="text-white/90">Add a course to your department</p>
+                    </div>
+                    <a href="{% url 'accounts:manage_courses' %}" class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur text-white rounded-xl font-medium hover:bg-white/30 transition border border-white/30">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to Courses
+                    </a>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="space-y-2">
+                {% for message in messages %}
+                <div class="rounded-xl px-4 py-3 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-amber-50 text-amber-800 border border-amber-200{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Course Details
+                        </h2>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
+                            <input type="text" name="code" required placeholder="e.g. EDU 101"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
+                            <input type="text" name="title" required placeholder="e.g. Introduction to Education"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Credits</label>
+                            <input type="number" name="credits" required min="1" max="6" placeholder="1–6"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+                            <select name="semester" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white">
+                                <option value="first">First Semester</option>
+                                <option value="second">Second Semester</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Academic Session</label>
+                            <select name="academic_session" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white">
+                                {% for session in academic_sessions %}
+                                <option value="{{ session.id }}" {% if session.is_active %}selected{% endif %}>
+                                    {{ session.name }}{% if session.is_active %} (Active){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Department and Level Selection -->
+                    <div class="p-6 border-t border-gray-200 bg-gray-50">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Departments <span class="text-red-500">*</span></label>
+                                <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-xl p-3 bg-white">
+                                    {% for department in departments %}
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input type="checkbox" name="departments" value="{{ department.id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="text-sm">{{ department.name }}</span>
+                                    </label>
+                                    {% empty %}
+                                    <p class="text-gray-500 text-sm">No departments available</p>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Select which departments can offer this course</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Levels <span class="text-red-500">*</span></label>
+                                <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-xl p-3 bg-white">
+                                    {% for level in levels %}
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input type="checkbox" name="levels" value="{{ level.id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="text-sm">{{ level.display_name }}</span>
+                                    </label>
+                                    {% empty %}
+                                    <p class="text-gray-500 text-sm">No levels available</p>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Select which levels can take this course</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                            Description
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Course Description</label>
+                        <textarea name="description" rows="4" placeholder="Brief description of the course..."
+                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-y"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                    <a href="{% url 'accounts:manage_courses' %}" class="inline-flex justify-center items-center px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex justify-center items-center px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Create Course
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,1725 @@
+{% extends 'layout/applicant.html' %}
+{% load static %}
+
+{% block late %}
+<style>
+    /* Enhanced Form Field Styling - Targets Django form fields directly */
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"],
+    select, textarea, input[type="file"] {
+        @apply w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base text-gray-900 bg-white;
+        @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+        @apply transition-all duration-200;
+        @apply placeholder-gray-400;
+        @apply shadow-sm;
+    }
+    
+    input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, input[type="date"]:focus, input[type="number"]:focus,
+    select:focus, textarea:focus, input[type="file"]:focus {
+        @apply shadow-lg shadow-blue-100;
+        @apply border-blue-500;
+    }
+    
+    input[type="text"]:hover, input[type="email"]:hover, input[type="tel"]:hover, input[type="date"]:hover, input[type="number"]:hover,
+    select:hover, textarea:hover, input[type="file"]:hover {
+        @apply border-gray-400;
+    }
+    
+    /* Select field specific styling */
+    select {
+        @apply appearance-none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+    
+    /* Textarea specific styling */
+    textarea {
+        @apply resize-vertical min-h-[100px];
+    }
+    
+    /* File input styling */
+    input[type="file"] {
+        @apply p-2;
+        @apply file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0;
+        @apply file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700;
+        @apply hover:file:bg-blue-100;
+    }
+    
+    /* Date input styling */
+    input[type="date"] {
+        @apply text-gray-900;
+    }
+    
+    /* Checkbox styling */
+    input[type="checkbox"] {
+        @apply w-5 h-5 text-blue-600 border-gray-300 rounded;
+        @apply focus:ring-blue-500 focus:ring-2;
+    }
+    
+    /* Error state styling */
+    input.error, select.error, textarea.error {
+        @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+        @apply shadow-lg shadow-red-100;
+    }
+    
+    /* Success state styling */
+    input.success, select.success, textarea.success {
+        @apply border-green-500 focus:ring-green-500 focus:border-green-500;
+        @apply shadow-lg shadow-green-100;
+    }
+    
+    /* Enhanced styling for specific form sections */
+    .school-info-section input, .school-info-section select {
+        @apply border-2 border-gray-300;
+        @apply focus:border-blue-500 focus:ring-blue-500;
+    }
+    
+    .school-info-section input:focus, .school-info-section select:focus {
+        @apply shadow-lg shadow-blue-100;
+    }
+</style>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Form Header -->
+        <div class="text-center mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Screening Form</h1>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Complete your application by filling out all required information. You can save your progress and return later.
+                </p>
+            </div>
+        </div>
+
+        <!-- Stepper Progress -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="w-full flex">
+                        {% for step in "123456"|make_list %}
+                        <div class="relative flex-grow text-center">
+                            <div class="h-12 flex items-center justify-center relative">
+                                <div class="relative z-10 h-8 w-8 flex items-center justify-center rounded-full text-sm font-semibold {% if forloop.counter == active_step %}bg-blue-600 text-white border-2 border-blue-600{% else %}bg-gray-200 text-gray-600 border-2 border-gray-300{% endif %}">
+                                    {{ forloop.counter }}
+                                </div>
+                                {% if not forloop.last %}
+                                <div class="absolute w-full h-1 top-1/2 left-1/2 -translate-y-1/2 {% if forloop.counter < active_step %}bg-blue-600{% else %}bg-gray-200{% endif %}" style="width: calc(100% - 1rem); transform: translateY(-50%)"></div>
+                                {% endif %}
+                            </div>
+                            <div class="text-xs mt-2 text-gray-700 hidden sm:block">
+                                {% if forloop.counter == 1 %} Personal Info 
+                                {% elif forloop.counter == 2 %} JAMB Details
+                                {% elif forloop.counter == 3 %} Academic Qualification
+                                {% elif forloop.counter == 4 %} NCE Programme
+                                {% elif forloop.counter == 5 %} Documents
+                                {% elif forloop.counter == 6 %} Declaration {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="bg-white shadow-lg rounded-2xl p-6 md:p-8">
+            <form method="POST" enctype="multipart/form-data" class="space-y-8" id="screeningForm">
+                {% csrf_token %}
+
+                <!-- Step 1: Personal Information -->
+                <div class="step" data-step="1">
+                    <div class="bg-blue-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-user text-blue-600 mr-3"></i>
+                            Personal Information
+                        </h3>
+                        <p class="text-blue-700 text-sm">Please provide your basic personal details</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                First Name <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Middle Name</label>
+                            {{ form.middle_name }}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Surname <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.surname }}
+                            {% if form.surname.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.surname.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Date of Birth <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Sex <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.sex }}
+                            {% if form.sex.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sex.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                State of Origin <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.state_of_origin }}
+                            {% if form.state_of_origin.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.state_of_origin.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Local Government Area <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.local_government }}
+                            {% if form.local_government.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.local_government.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Email Address <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                GSM Number <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Contact Address <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.contact_address }}
+                            {% if form.contact_address.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.contact_address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: JAMB Details -->
+                <div class="step hidden" data-step="2">
+                    <div class="bg-green-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-graduation-cap text-green-600 mr-3"></i>
+                            JAMB Details
+                        </h3>
+                        <p class="text-green-700 text-sm">Provide your JAMB examination information</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">JAMB Registration Number</label>
+                            {{ form.jamb_reg_no }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">JAMB Score</label>
+                            {{ form.jamb_score }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Academic Qualification -->
+                <div class="step hidden" data-step="3">
+                    <div class="bg-purple-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-book text-purple-600 mr-3"></i>
+                            Academic Qualification
+                        </h3>
+                        <p class="text-purple-700 text-sm">Provide your educational background and qualifications</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- School Information Section - Enhanced Design -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 mb-8">
+                            <div class="text-center mb-6">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                                    <i class="fas fa-graduation-cap text-2xl text-blue-600"></i>
+                                </div>
+                                <h4 class="text-xl font-bold text-blue-900 mb-2">School Information</h4>
+                                <p class="text-blue-700 text-sm">Please provide details about your educational background</p>
+                            </div>
+                            
+                            <!-- Primary School Section -->
+                            <div class="bg-white rounded-xl p-5 mb-6 border border-blue-100 shadow-sm">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <h5 class="text-lg font-semibold text-blue-900">Primary School</h5>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-base font-bold text-gray-800 mb-3">
+                                            <i class="fas fa-school text-blue-600 mr-2"></i>
+                                            Primary School Attended <span class="text-red-500">*</span>
+                                        </label>
+                                        {{ form.primary_school }}
+                                        {% if form.primary_school.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.primary_school.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-base font-bold text-gray-800 mb-3">
+                                            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                                            School Dates <span class="text-red-500">*</span>
+                                        </label>
+                                        {{ form.primary_school_dates }}
+                                        <p class="text-sm text-blue-600 mt-2 font-medium">Format: 2012-2018</p>
+                                        {% if form.primary_school_dates.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.primary_school_dates.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Secondary School Section -->
+                            <div class="bg-white rounded-xl p-5 mb-6 border border-indigo-100 shadow-sm">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-3 h-3 bg-indigo-500 rounded-full mr-3"></div>
+                                    <h5 class="text-lg font-semibold text-indigo-900">Secondary School</h5>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-base font-bold text-gray-800 mb-3">
+                                            <i class="fas fa-university text-indigo-600 mr-2"></i>
+                                            Secondary School Attended <span class="text-red-500">*</span>
+                                        </label>
+                                        {{ form.secondary_school }}
+                                        {% if form.secondary_school.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_school.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-base font-bold text-gray-800 mb-3">
+                                            <i class="fas fa-calendar-alt text-indigo-600 mr-2"></i>
+                                            School Dates <span class="text-red-500">*</span>
+                                        </label>
+                                        {{ form.secondary_school_dates }}
+                                        <p class="text-sm text-indigo-600 mt-2 font-medium">Format: 2018-2024</p>
+                                        {% if form.secondary_school_dates.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_school_dates.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Examination Details Section -->
+                            <div class="bg-white rounded-xl p-5 border border-purple-100 shadow-sm">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <h5 class="text-lg font-semibold text-purple-900">Examination Details</h5>
+                                </div>
+                                
+                                <!-- First Sitting Examination - Required -->
+                                <div class="bg-purple-50 rounded-lg p-4 mb-4 border border-purple-200">
+                                    <div class="flex items-center mb-3">
+                                        <span class="w-2 h-2 bg-purple-600 rounded-full mr-2"></span>
+                                        <h6 class="text-base font-semibold text-purple-900">First Sitting (Required)</h6>
+                                        <span class="ml-2 px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">Required</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-certificate text-purple-600 mr-2"></i>
+                                                Exam Type
+                                            </label>
+                                            <select name="first_sitting_exam_type" class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200" required>
+                                                <option value="">Select Exam Type</option>
+                                                <option value="waec">WAEC</option>
+                                                <option value="neco">NECO</option>
+                                                <option value="nabteb">NABTEB</option>
+                                                <option value="gce">GCE</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-hashtag text-purple-600 mr-2"></i>
+                                                Exam Number
+                                            </label>
+                                            <input type="text" name="first_sitting_exam_number" class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200" placeholder="Enter exam number" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-calendar text-purple-600 mr-2"></i>
+                                                Exam Year
+                                            </label>
+                                            <input type="number" name="first_sitting_exam_year" min="1980" max="2024" class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200" placeholder="2024" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Second Sitting Examination - Optional -->
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center mb-3">
+                                        <span class="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
+                                        <h6 class="text-base font-semibold text-gray-900">Second Sitting (Optional)</h6>
+                                        <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">If Applicable</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-certificate text-gray-600 mr-2"></i>
+                                                Exam Type
+                                            </label>
+                                            <select name="second_sitting_exam_type" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-200">
+                                                <option value="">Select Exam Type</option>
+                                                <option value="waec">WAEC</option>
+                                                <option value="neco">NECO</option>
+                                                <option value="nabteb">NABTEB</option>
+                                                <option value="gce">GCE</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-hashtag text-gray-600 mr-2"></i>
+                                                Exam Number
+                                            </label>
+                                            <input type="text" name="second_sitting_exam_number" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-200" placeholder="Enter exam number">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                <i class="fas fa-calendar text-gray-600 mr-2"></i>
+                                                Exam Year
+                                            </label>
+                                            <input type="number" name="second_sitting_exam_year" min="1980" max="2024" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-200" placeholder="2024">
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-3 italic">Note: Second sitting is optional. Only fill if you have additional examination results.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Academic Subjects Section -->
+                        <div class="mt-8 bg-gray-50 rounded-xl p-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Academic Subjects & Grades</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Click the buttons below to add your subject and grade for each sitting</p>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+                                    <button type="button" id="addFirstSitting" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 shadow-md">
+                                        <i class="fas fa-plus-circle text-sm"></i>
+                                        <span>Add First Sitting Subject</span>
+                                    </button>
+                                    <button type="button" id="addSecondSitting" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2 shadow-md">
+                                        <i class="fas fa-plus-circle text-sm"></i>
+                                        <span>Add Second Sitting Subject</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- First Sitting Subjects -->
+                            <div id="firstSittingSection" class="mb-8">
+                                <h5 class="text-md font-medium text-gray-800 mb-4 flex items-center">
+                                    <span class="w-3 h-3 bg-blue-500 rounded-full mr-3"></span>
+                                    First Sitting Subjects
+                                    <span class="text-red-500 ml-2 text-sm">*</span>
+                                </h5>
+                                <div id="firstSittingSubjects" class="space-y-4 min-h-[60px]">
+                                    <!-- Placeholder when no subjects added -->
+                                    <div class="firstSittingPlaceholder bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 text-center">
+                                        <i class="fas fa-arrow-up text-blue-400 text-2xl mb-2"></i>
+                                        <p class="text-blue-700 font-medium">Click "Add First Sitting Subject" button above to add your subjects</p>
+                                        <p class="text-blue-600 text-sm mt-1">Each subject field will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Second Sitting Subjects -->
+                            <div id="secondSittingSection" class="mb-8">
+                                <h5 class="text-md font-medium text-gray-800 mb-4 flex items-center">
+                                    <span class="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+                                    Second Sitting Subjects
+                                    <span class="text-gray-500 ml-2 text-sm">(Optional)</span>
+                                </h5>
+                                <div id="secondSittingSubjects" class="space-y-4 min-h-[60px]">
+                                    <!-- Placeholder when no subjects added -->
+                                    <div class="secondSittingPlaceholder bg-green-50 border-2 border-dashed border-green-300 rounded-lg p-6 text-center">
+                                        <i class="fas fa-arrow-up text-green-400 text-2xl mb-2"></i>
+                                        <p class="text-green-700 font-medium">Click "Add Second Sitting Subject" button above to add your subjects</p>
+                                        <p class="text-green-600 text-sm mt-1">Each subject field will appear here (if applicable)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h6 class="text-sm font-semibold text-blue-800 mb-2">First Sitting Summary</h6>
+                                    <div id="firstSittingSummary" class="text-sm text-blue-700">
+                                        No subjects added yet
+                                    </div>
+                                </div>
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <h6 class="text-sm font-semibold text-green-800 mb-2">Second Sitting Summary</h6>
+                                    <div id="secondSittingSummary" class="text-sm text-green-700">
+                                        No subjects added yet
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Choice of NCE Programme -->
+                <div class="step hidden" data-step="4">
+                    <div class="bg-orange-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-list text-orange-600 mr-3"></i>
+                            Choice of NCE Programme
+                        </h3>
+                        <p class="text-orange-700 text-sm">Select your preferred programs in order of priority</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">First Choice</label>
+                            {{ form.first_choice }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Second Choice</label>
+                            {{ form.second_choice }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Third Choice</label>
+                            {{ form.third_choice }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Documents Checklist -->
+                <div class="step hidden" data-step="5">
+                    <div class="bg-red-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-file-upload text-red-600 mr-3"></i>
+                            Documents Checklist
+                        </h3>
+                        <p class="text-red-700 text-sm">Upload all required documents for your application</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                WAEC/NECO/NABTEP Result
+                                {% if existing_form.waec_result_status == 'rejected' %}
+                                <span class="text-red-500">* (Re-upload Required)</span>
+                                {% elif not existing_form or not existing_form.waec_result %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+
+                            {% if existing_form and existing_form.waec_result %}
+                                {% if existing_form.waec_result_status == 'rejected' %}
+                                    <!-- Rejected Document -->
+                                    <div class="mb-3 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
+                                        <div class="flex items-center text-red-700 mb-2">
+                                            <i class="fas fa-times-circle mr-2"></i>
+                                            <span class="text-sm font-bold">Document Rejected - Re-upload Required</span>
+                                        </div>
+                                        <p class="text-sm text-red-800 mb-2">
+                                            <strong>Reason:</strong> {{ existing_form.waec_result_comment|default:"Document did not meet requirements" }}
+                                        </p>
+                                        <a href="{{ existing_form.waec_result.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline">
+                                            View rejected document
+                                        </a>
+                                    </div>
+                                {% elif existing_form.waec_result_status == 'verified' %}
+                                    <!-- Verified Document -->
+                                    <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded and verified:</span>
+                                        </div>
+                                        <a href="{{ existing_form.waec_result.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.waec_result.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this verified document.</p>
+                                    </div>
+                                {% else %}
+                                    <!-- Pending Document -->
+                                    <div class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="flex items-center text-yellow-700">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded (pending verification):</span>
+                                        </div>
+                                        <a href="{{ existing_form.waec_result.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.waec_result.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this document.</p>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {{ form.waec_result }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                JAMB Result Slip (if Applicable)
+                                {% if existing_form.jamb_result_slip_status == 'rejected' %}
+                                <span class="text-red-500">* (Re-upload Required)</span>
+                                {% elif not existing_form or not existing_form.jamb_result_slip %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+
+                            {% if existing_form and existing_form.jamb_result_slip %}
+                                {% if existing_form.jamb_result_slip_status == 'rejected' %}
+                                    <div class="mb-3 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
+                                        <div class="flex items-center text-red-700 mb-2">
+                                            <i class="fas fa-times-circle mr-2"></i>
+                                            <span class="text-sm font-bold">Document Rejected - Re-upload Required</span>
+                                        </div>
+                                        <p class="text-sm text-red-800 mb-2">
+                                            <strong>Reason:</strong> {{ existing_form.jamb_result_slip_comment|default:"Document did not meet requirements" }}
+                                        </p>
+                                        <a href="{{ existing_form.jamb_result_slip.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline">
+                                            View rejected document
+                                        </a>
+                                    </div>
+                                {% elif existing_form.jamb_result_slip_status == 'verified' %}
+                                    <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded and verified:</span>
+                                        </div>
+                                        <a href="{{ existing_form.jamb_result_slip.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.jamb_result_slip.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this verified document.</p>
+                                    </div>
+                                {% else %}
+                                    <div class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="flex items-center text-yellow-700">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded (pending verification):</span>
+                                        </div>
+                                        <a href="{{ existing_form.jamb_result_slip.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.jamb_result_slip.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this document.</p>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {{ form.jamb_result_slip }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Birth Certificate
+                                {% if existing_form.birth_certificate_status == 'rejected' %}
+                                <span class="text-red-500"> (Re-upload Required)</span>
+                                {% endif %}
+                            </label>
+
+                            {% if existing_form and existing_form.birth_certificate %}
+                                {% if existing_form.birth_certificate_status == 'rejected' %}
+                                    <div class="mb-3 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
+                                        <div class="flex items-center text-red-700 mb-2">
+                                            <i class="fas fa-times-circle mr-2"></i>
+                                            <span class="text-sm font-bold">Document Rejected - Re-upload Required</span>
+                                        </div>
+                                        <p class="text-sm text-red-800 mb-2">
+                                            <strong>Reason:</strong> {{ existing_form.birth_certificate_comment|default:"Document did not meet requirements" }}
+                                        </p>
+                                        <a href="{{ existing_form.birth_certificate.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline">
+                                            View rejected document
+                                        </a>
+                                    </div>
+                                {% elif existing_form.birth_certificate_status == 'verified' %}
+                                    <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded and verified:</span>
+                                        </div>
+                                        <a href="{{ existing_form.birth_certificate.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.birth_certificate.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this verified document.</p>
+                                    </div>
+                                {% else %}
+                                    <div class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="flex items-center text-yellow-700">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded (pending verification):</span>
+                                        </div>
+                                        <a href="{{ existing_form.birth_certificate.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.birth_certificate.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this document.</p>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {{ form.birth_certificate }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Passport Photograph
+                                {% if existing_form.passport_photo_status == 'rejected' %}
+                                <span class="text-red-500">* (Re-upload Required)</span>
+                                {% elif not existing_form or not existing_form.passport_photo %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+
+                            {% if existing_form and existing_form.passport_photo %}
+                                {% if existing_form.passport_photo_status == 'rejected' %}
+                                    <div class="mb-3 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
+                                        <div class="flex items-center text-red-700 mb-2">
+                                            <i class="fas fa-times-circle mr-2"></i>
+                                            <span class="text-sm font-bold">Photo Rejected - Re-upload Required</span>
+                                        </div>
+                                        <p class="text-sm text-red-800 mb-2">
+                                            <strong>Reason:</strong> {{ existing_form.passport_photo_comment|default:"Photo did not meet requirements" }}
+                                        </p>
+                                        <a href="{{ existing_form.passport_photo.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline">
+                                            View rejected photo
+                                        </a>
+                                    </div>
+                                {% elif existing_form.passport_photo_status == 'verified' %}
+                                    <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded and verified:</span>
+                                        </div>
+                                        <a href="{{ existing_form.passport_photo.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.passport_photo.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this verified photo.</p>
+                                    </div>
+                                {% else %}
+                                    <div class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="flex items-center text-yellow-700">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded (pending verification):</span>
+                                        </div>
+                                        <a href="{{ existing_form.passport_photo.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                            {{ existing_form.passport_photo.name|slice:"20:" }}
+                                        </a>
+                                        <p class="text-xs text-gray-600 mt-1">No need to re-upload. Upload only if you want to replace this photo.</p>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {{ form.passport_photo }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Declaration -->
+                <div class="step hidden" data-step="6">
+                    <div class="bg-indigo-50 rounded-xl p-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-handshake text-indigo-600 mr-3"></i>
+                            Declaration
+                        </h3>
+                        <p class="text-indigo-700 text-sm">Confirm that all information provided is accurate</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="declaration" name="declaration" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="declaration" class="font-medium text-gray-700">I declare that all information provided is correct</label>
+                                <p class="text-gray-500">By checking this box, you confirm that all the information provided in this form is true and correct.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
+                    <button type="button" id="prevBtn" class="w-full sm:w-auto bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors duration-200 font-medium" style="display: none;">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    
+                    <div class="flex items-center space-x-4 order-2 sm:order-1">
+                        <div id="saveIndicator" class="text-sm text-green-600 hidden">
+                            <i class="ti ti-check text-sm mr-1"></i>
+                            Progress saved
+                        </div>
+                        <div id="savingIndicator" class="text-sm text-blue-600 hidden">
+                            <i class="ti ti-loader text-sm mr-1 animate-spin"></i>
+                            Saving...
+                        </div>
+                    </div>
+                    
+                    <div class="w-full sm:w-auto order-1 sm:order-2">
+                        <button type="button" id="nextBtn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                            Next
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                        <button type="submit" id="submitBtn" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium" style="display: none;">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit Application
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Custom Alert Function
+    function showAlert(message, type = 'error') {
+        // Create alert container if it doesn't exist
+        let alertContainer = document.querySelector('.custom-alert-container');
+        if (!alertContainer) {
+            alertContainer = document.createElement('div');
+            alertContainer.className = 'custom-alert-container fixed top-4 right-4 z-50 space-y-2 max-w-sm';
+            document.body.appendChild(alertContainer);
+        }
+
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm transform transition-all duration-300 ease-in-out ${
+            type === 'success' ? 'bg-green-500' :
+            type === 'warning' ? 'bg-yellow-500' :
+            type === 'info' ? 'bg-blue-500' :
+            'bg-red-500'
+        }`;
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateX(100%)';
+        alert.innerHTML = `
+            <div class="flex items-start">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    type === 'info' ? 'fa-info-circle' :
+                    'fa-exclamation-circle'
+                } mr-2 mt-0.5"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        alertContainer.appendChild(alert);
+
+        // Animate in
+        setTimeout(() => {
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateX(0)';
+        }, 10);
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                alert.remove();
+                // Remove container if no more alerts
+                if (alertContainer.children.length === 0) {
+                    alertContainer.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Multi-step form variables
+    let currentStep = 1;
+    const totalSteps = 6;
+    const form = document.getElementById('screeningForm');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // State and LGA variables
+    const stateSelect = document.getElementById('id_state_of_origin');
+    const lgaSelect = document.getElementById('id_local_government');
+    
+    // Get the states data from the context (safely parse the JSON)
+    let statesData = {};
+    try {
+        statesData = JSON.parse('{{ states_lgas|escapejs }}');
+    } catch (e) {
+        console.error('Error parsing states data:', e);
+    }
+
+    // Function to populate LGA dropdown
+    function updateLGAs(selectedState) {
+        if (!lgaSelect) return; // Guard clause if element not found
+        
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+        
+        if (selectedState && statesData[selectedState]) {
+            statesData[selectedState].forEach(lga => {
+                const option = document.createElement('option');
+                option.value = lga;
+                option.textContent = lga;
+                lgaSelect.appendChild(option);
+            });
+        }
+
+        // Restore previously selected LGA if it exists
+        const previousLGA = '{{ form.local_government.value|default:""|escapejs }}';
+        if (previousLGA && lgaSelect.querySelector(`option[value="${previousLGA}"]`)) {
+            lgaSelect.value = previousLGA;
+        }
+    }
+
+    // Function to show/hide steps
+    function showStep(stepNumber) {
+        // Hide all steps
+        const steps = document.querySelectorAll('.step');
+        steps.forEach(step => {
+            step.style.display = 'none';
+        });
+        
+        // Show current step
+        const currentStepElement = document.querySelector(`.step[data-step="${stepNumber}"]`);
+        if (currentStepElement) {
+            currentStepElement.style.display = 'block';
+        }
+        
+        // Update stepper indicators
+        document.querySelectorAll('.flex-grow').forEach((indicator, index) => {
+            const stepNum = index + 1;
+            const circle = indicator.querySelector('.rounded-full');
+            const line = indicator.querySelector('.absolute');
+            
+            if (circle) {
+                if (stepNum === stepNumber) {
+                    // Current step
+                    circle.classList.remove('bg-gray-200', 'text-gray-600', 'border-gray-300');
+                    circle.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                } else if (stepNum < stepNumber) {
+                    // Completed steps
+                    circle.classList.remove('bg-gray-200', 'text-gray-600', 'border-gray-300');
+                    circle.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                } else {
+                    // Future steps
+                    circle.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                    circle.classList.add('bg-gray-200', 'text-gray-600', 'border-gray-300');
+                }
+            }
+            
+            if (line && stepNum < totalSteps) {
+                if (stepNum < stepNumber) {
+                    line.classList.remove('bg-gray-200');
+                    line.classList.add('bg-blue-600');
+                } else {
+                    line.classList.remove('bg-blue-600');
+                    line.classList.add('bg-gray-200');
+                }
+            }
+        });
+        
+        // Update buttons visibility
+        if (prevBtn) prevBtn.style.display = stepNumber === 1 ? 'none' : 'block';
+        if (nextBtn && submitBtn) {
+            if (stepNumber === totalSteps) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+        }
+        
+        // Scroll to top of the form smoothly
+        document.querySelector('.max-w-4xl').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Auto-save function
+    function autoSaveStep(stepNumber) {
+        const saveIndicator = document.getElementById('saveIndicator');
+        const savingIndicator = document.getElementById('savingIndicator');
+        
+        // Show saving indicator
+        if (savingIndicator) {
+            savingIndicator.classList.remove('hidden');
+        }
+        if (saveIndicator) {
+            saveIndicator.classList.add('hidden');
+        }
+        
+        const formData = new FormData(form);
+        formData.append('step', stepNumber);
+        formData.append('auto_save', 'true');
+        
+        // Collect academic subjects data for step 3
+        if (stepNumber === 3) {
+            const academicSubjectsData = {
+                first: {},
+                second: {}
+            };
+
+            // Collect first sitting subjects
+            const firstSittingCards = document.querySelectorAll('#firstSittingSubjects .bg-white');
+            firstSittingCards.forEach((card, index) => {
+                const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                
+                if (subjectSelect && gradeSelect && subjectSelect.value && gradeSelect.value) {
+                    academicSubjectsData.first[index + 1] = {
+                        subject: subjectSelect.value,
+                        grade: gradeSelect.value,
+                        sitting: 'first'
+                    };
+                }
+            });
+
+            // Collect second sitting subjects
+            const secondSittingCards = document.querySelectorAll('#secondSittingSubjects .bg-white');
+            secondSittingCards.forEach((card, index) => {
+                const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                
+                if (subjectSelect && gradeSelect && subjectSelect.value && gradeSelect.value) {
+                    academicSubjectsData.second[index + 1] = {
+                        subject: subjectSelect.value,
+                        grade: gradeSelect.value,
+                        sitting: 'second'
+                    };
+                }
+            });
+
+            formData.append('academic_subjects', JSON.stringify(academicSubjectsData));
+            
+            // Also collect examination details for step 3
+            const firstExamType = document.querySelector('select[name="first_sitting_exam_type"]');
+            const firstExamNumber = document.querySelector('input[name="first_sitting_exam_number"]');
+            const firstExamYear = document.querySelector('input[name="first_sitting_exam_year"]');
+            
+            if (firstExamType && firstExamType.value) {
+                formData.append('first_sitting_exam_type', firstExamType.value);
+            }
+            if (firstExamNumber && firstExamNumber.value) {
+                formData.append('first_sitting_exam_number', firstExamNumber.value);
+            }
+            if (firstExamYear && firstExamYear.value) {
+                formData.append('first_sitting_exam_year', firstExamYear.value);
+            }
+            
+            // Second sitting examination (optional)
+            const secondExamType = document.querySelector('select[name="second_sitting_exam_type"]');
+            const secondExamNumber = document.querySelector('input[name="second_sitting_exam_number"]');
+            const secondExamYear = document.querySelector('input[name="second_sitting_exam_year"]');
+            
+            if (secondExamType && secondExamType.value) {
+                formData.append('second_sitting_exam_type', secondExamType.value);
+            }
+            if (secondExamNumber && secondExamNumber.value) {
+                formData.append('second_sitting_exam_number', secondExamNumber.value);
+            }
+            if (secondExamYear && secondExamYear.value) {
+                formData.append('second_sitting_exam_year', secondExamYear.value);
+            }
+        }
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide saving indicator
+            if (savingIndicator) {
+                savingIndicator.classList.add('hidden');
+            }
+            
+            if (data.success) {
+                console.log(`Step ${stepNumber} auto-saved successfully`);
+                // Show save indicator
+                if (saveIndicator) {
+                    saveIndicator.classList.remove('hidden');
+                    // Hide after 3 seconds
+                    setTimeout(() => {
+                        saveIndicator.classList.add('hidden');
+                    }, 3000);
+                }
+            } else {
+                console.error('Auto-save failed:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Auto-save error:', error);
+            // Hide saving indicator on error
+            if (savingIndicator) {
+                savingIndicator.classList.add('hidden');
+            }
+        });
+    }
+
+    // Load saved data from localStorage
+    function loadSavedData() {
+        for (let step = 1; step <= totalSteps; step++) {
+            const savedData = localStorage.getItem(`screening_form_step_${step}`);
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    const stepElement = document.querySelector(`.step[data-step="${step}"]`);
+                    if (stepElement) {
+                        Object.keys(data).forEach(fieldName => {
+                            const input = stepElement.querySelector(`[name="${fieldName}"]`);
+                            if (input && !input.value) {
+                                input.value = data[fieldName];
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+        }
+    }
+
+    // Function to validate step fields
+    function validateStep(stepNumber) {
+        const currentStepDiv = document.querySelector(`.step[data-step="${stepNumber}"]`);
+        if (!currentStepDiv) return true; // Skip validation if step not found
+
+        const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+        let isValid = true;
+
+        // Clear previous error states
+        inputs.forEach(input => {
+            input.classList.remove('error');
+        });
+
+        // Validate based on step
+        if (stepNumber === 1) {
+            // Personal Information - validate required fields
+            const requiredFields = ['first_name', 'surname', 'date_of_birth', 'sex', 'state_of_origin', 'local_government', 'email', 'phone_number', 'contact_address'];
+            requiredFields.forEach(fieldName => {
+                const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
+                if (input && (!input.value.trim() || input.value === 'N/A')) {
+                    isValid = false;
+                    input.classList.add('error');
+                }
+            });
+        } else if (stepNumber === 2) {
+            // JAMB Details - validate required fields
+            const requiredFields = ['jamb_reg_no', 'jamb_score'];
+            requiredFields.forEach(fieldName => {
+                const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
+                if (input && (!input.value.trim() || input.value === 'N/A')) {
+                    isValid = false;
+                    input.classList.add('error');
+                }
+            });
+        } else if (stepNumber === 3) {
+            // Academic Qualification - validate required fields
+            const requiredFields = ['primary_school', 'primary_school_dates', 'secondary_school', 'secondary_school_dates'];
+            requiredFields.forEach(fieldName => {
+                const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
+                if (input && (!input.value.trim() || input.value === 'N/A')) {
+                    isValid = false;
+                    input.classList.add('error');
+                }
+            });
+
+            // Validate first sitting examination (required)
+            const firstExamType = currentStepDiv.querySelector('select[name="first_sitting_exam_type"]');
+            const firstExamNumber = currentStepDiv.querySelector('input[name="first_sitting_exam_number"]');
+            const firstExamYear = currentStepDiv.querySelector('input[name="first_sitting_exam_year"]');
+
+            if (firstExamType && (!firstExamType.value || firstExamType.value === '')) {
+                isValid = false;
+                firstExamType.classList.add('error');
+            }
+            if (firstExamNumber && (!firstExamNumber.value.trim())) {
+                isValid = false;
+                firstExamNumber.classList.add('error');
+            }
+            if (firstExamYear && (!firstExamYear.value || firstExamYear.value < 1980 || firstExamYear.value > 2024)) {
+                isValid = false;
+                firstExamYear.classList.add('error');
+            }
+
+            // Validate that at least one subject is added for first sitting
+            const firstSittingSubjects = document.querySelectorAll('#firstSittingSubjects .bg-white');
+            if (firstSittingSubjects.length === 0) {
+                isValid = false;
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-red-600 text-sm mt-2';
+                errorMsg.textContent = 'Please add at least one subject for first sitting';
+                const subjectsSection = document.getElementById('firstSittingSection');
+                if (subjectsSection && !subjectsSection.querySelector('.text-red-600')) {
+                    subjectsSection.appendChild(errorMsg);
+                }
+            } else {
+                // Remove error message if exists
+                const existingError = document.querySelector('#firstSittingSection .text-red-600');
+                if (existingError) existingError.remove();
+            }
+        } else if (stepNumber === 4) {
+            // NCE Programme - validate required fields
+            const requiredFields = ['first_choice'];
+            requiredFields.forEach(fieldName => {
+                const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
+                if (input && (!input.value || input.value === '')) {
+                    isValid = false;
+                    input.classList.add('error');
+                }
+            });
+        } else if (stepNumber === 5) {
+            // Documents - validate required fields only if not already uploaded
+            const requiredFields = ['waec_result', 'jamb_result_slip', 'passport_photo'];
+            requiredFields.forEach(fieldName => {
+                const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
+                if (input) {
+                    // Check if there's an existing file (green box indicating file already uploaded)
+                    const hasExistingFile = input.parentElement.querySelector('.bg-green-50');
+
+                    // Only validate if no existing file and no new file selected
+                    if (!hasExistingFile && (!input.files || input.files.length === 0)) {
+                        isValid = false;
+                        input.classList.add('error');
+                    }
+                }
+            });
+        } else if (stepNumber === 6) {
+            // Declaration - validate required fields
+            const declaration = currentStepDiv.querySelector('input[name="declaration"]');
+            if (declaration && !declaration.checked) {
+                isValid = false;
+                declaration.classList.add('error');
+            }
+        }
+
+        return isValid;
+    }
+
+    // Event Listeners
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (validateStep(currentStep)) {
+                // Auto-save current step before moving to next
+                autoSaveStep(currentStep);
+                currentStep = Math.min(currentStep + 1, totalSteps);
+                showStep(currentStep);
+            } else {
+                showAlert('Please fill in all required fields.', 'error');
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            // Auto-save current step before moving back
+            autoSaveStep(currentStep);
+            currentStep = Math.max(currentStep - 1, 1);
+            showStep(currentStep);
+        });
+    }
+
+    // Form submission handler
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate all steps before submission
+            let allStepsValid = true;
+            for (let step = 1; step <= totalSteps; step++) {
+                if (!validateStep(step)) {
+                    allStepsValid = false;
+                    // Show the first invalid step
+                    showStep(step);
+                    break;
+                }
+            }
+
+            if (!allStepsValid) {
+                showAlert('Please complete all required fields before submitting the form.', 'error');
+                return;
+            }
+
+            // Collect academic subjects data
+            const academicSubjectsData = {
+                first: {},
+                second: {}
+            };
+
+            // Collect first sitting subjects
+            const firstSittingCards = document.querySelectorAll('#firstSittingSubjects .bg-white');
+            firstSittingCards.forEach((card, index) => {
+                const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                
+                if (subjectSelect && gradeSelect && subjectSelect.value && gradeSelect.value) {
+                    academicSubjectsData.first[index + 1] = {
+                        subject: subjectSelect.value,
+                        grade: gradeSelect.value,
+                        sitting: 'first'
+                    };
+                }
+            });
+
+            // Collect second sitting subjects
+            const secondSittingCards = document.querySelectorAll('#secondSittingSubjects .bg-white');
+            secondSittingCards.forEach((card, index) => {
+                const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                
+                if (subjectSelect && gradeSelect && subjectSelect.value && gradeSelect.value) {
+                    academicSubjectsData.second[index + 1] = {
+                        subject: subjectSelect.value,
+                        grade: gradeSelect.value,
+                        sitting: 'second'
+                    };
+                }
+            });
+
+            const formData = new FormData(form);
+            formData.append('academic_subjects', JSON.stringify(academicSubjectsData));
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    showAlert(data.message || 'An error occurred.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('An error occurred while submitting the form.', 'error');
+            });
+        });
+    }
+
+    // State select change handler
+    if (stateSelect) {
+        stateSelect.addEventListener('change', function() {
+            updateLGAs(this.value);
+            this.classList.remove('error');
+        });
+    }
+
+    // LGA select change handler
+    if (lgaSelect) {
+        lgaSelect.addEventListener('change', function() {
+            this.classList.remove('error');
+        });
+    }
+
+    // Initialize first step and LGAs if state is pre-selected
+    showStep({{ active_step }}); // Start from the last saved step
+    currentStep = {{ active_step }}; // Set current step to the last saved step
+    
+    if (stateSelect && stateSelect.value) {
+        updateLGAs(stateSelect.value);
+    }
+
+    // Academic Subjects Management
+    const academicSubjects = {
+        firstSitting: [],
+        secondSitting: []
+    };
+
+    const subjectChoices = [
+        {value: 'english', label: 'English Language'},
+        {value: 'mathematics', label: 'Mathematics'},
+        {value: 'physics', label: 'Physics'},
+        {value: 'chemistry', label: 'Chemistry'},
+        {value: 'biology', label: 'Biology'},
+        {value: 'economics', label: 'Economics'},
+        {value: 'literature', label: 'Literature in English'},
+        {value: 'government', label: 'Government'},
+        {value: 'history', label: 'History'},
+        {value: 'geography', label: 'Geography'},
+        {value: 'commerce', label: 'Commerce'},
+        {value: 'accounting', label: 'Accounting'},
+        {value: 'agriculture', label: 'Agricultural Science'},
+        {value: 'further_maths', label: 'Further Mathematics'},
+        {value: 'civic_education', label: 'Civic Education'},
+        {value: 'christian_religious_studies', label: 'Christian Religious Studies'},
+        {value: 'islamic_studies', label: 'Islamic Studies'},
+        {value: 'yoruba', label: 'Yoruba'},
+        {value: 'hausa', label: 'Hausa'},
+        {value: 'igbo', label: 'Igbo'},
+        {value: 'french', label: 'French'},
+        {value: 'arabic', label: 'Arabic'},
+        {value: 'food_and_nutrition', label: 'Food and Nutrition'},
+        {value: 'home_economics', label: 'Home Economics'},
+        {value: 'technical_drawing', label: 'Technical Drawing'},
+        {value: 'woodwork', label: 'Woodwork'},
+        {value: 'metalwork', label: 'Metalwork'},
+        {value: 'auto_mechanics', label: 'Auto Mechanics'},
+        {value: 'electronics', label: 'Electronics'},
+        {value: 'computer_studies', label: 'Computer Studies'},
+        {value: 'visual_arts', label: 'Visual Arts'},
+        {value: 'music', label: 'Music'},
+        {value: 'physical_education', label: 'Physical Education'},
+        {value: 'health_education', label: 'Health Education'}
+    ];
+
+    const gradeChoices = [
+        {value: 'A1', label: 'A1'},
+        {value: 'B2', label: 'B2'},
+        {value: 'B3', label: 'B3'},
+        {value: 'C4', label: 'C4'},
+        {value: 'C5', label: 'C5'},
+        {value: 'C6', label: 'C6'},
+        {value: 'D7', label: 'D7'},
+        {value: 'E8', label: 'E8'},
+        {value: 'F9', label: 'F9'}
+    ];
+
+    function createSubjectCard(sitting, subjectId) {
+        const isFirstSitting = sitting === 'first';
+        const colorClass = isFirstSitting ? 'blue' : 'green';
+        const borderColor = isFirstSitting ? 'border-blue-300' : 'border-green-300';
+        const bgColor = isFirstSitting ? 'bg-blue-50' : 'bg-green-50';
+        const containerId = isFirstSitting ? 'firstSittingSubjects' : 'secondSittingSubjects';
+
+        const card = document.createElement('div');
+        card.className = `bg-white border-2 ${borderColor} rounded-lg p-4 shadow-md transition-all duration-300`;
+        card.id = `subject-card-${sitting}-${subjectId}`;
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between mb-4 ${bgColor} p-2 rounded-lg">
+                <h6 class="text-sm font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-book-open text-${colorClass}-600 mr-2"></i>
+                    Subject ${subjectId}
+                </h6>
+                <button type="button" onclick="removeSubject('${sitting}', ${subjectId})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors duration-200 flex items-center space-x-1">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Remove</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">
+                        <i class="fas fa-graduation-cap text-${colorClass}-600 mr-1"></i>
+                        Subject <span class="text-red-500">*</span>
+                    </label>
+                    <select name="academic_subjects[${sitting}][${subjectId}][subject]" class="subject-select w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
+                        <option value="">Select Subject</option>
+                        ${subjectChoices.map(subject => `<option value="${subject.value}">${subject.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">
+                        <i class="fas fa-award text-${colorClass}-600 mr-1"></i>
+                        Grade <span class="text-red-500">*</span>
+                    </label>
+                    <select name="academic_subjects[${sitting}][${subjectId}][grade]" class="grade-select w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
+                        <option value="">Select Grade</option>
+                        ${gradeChoices.map(grade => `<option value="${grade.value}">${grade.label}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            <input type="hidden" name="academic_subjects[${sitting}][${subjectId}][sitting]" value="${sitting}">
+        `;
+        
+        // Add event listeners for real-time summary updates
+        setTimeout(() => {
+            const subjectSelect = card.querySelector('.subject-select');
+            const gradeSelect = card.querySelector('.grade-select');
+            
+            if (subjectSelect) {
+                subjectSelect.addEventListener('change', () => {
+                    updateSummaryOnChange(sitting, subjectId);
+                });
+            }
+            
+            if (gradeSelect) {
+                gradeSelect.addEventListener('change', () => {
+                    updateSummaryOnChange(sitting, subjectId);
+                });
+            }
+        }, 100);
+        
+        return card;
+    }
+
+    function addSubject(sitting, silent = false) {
+        const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
+        const subjectId = subjects.length + 1;
+
+        if (subjectId > 9) {
+            if (!silent) {
+                showAlert('Maximum 9 subjects allowed per sitting', 'warning');
+            }
+            return;
+        }
+
+        subjects.push({id: subjectId, subject: '', grade: ''});
+        const card = createSubjectCard(sitting, subjectId);
+
+        const container = document.getElementById(sitting === 'first' ? 'firstSittingSubjects' : 'secondSittingSubjects');
+
+        // Remove placeholder if this is the first subject
+        if (subjectId === 1) {
+            const placeholder = container.querySelector(`.${sitting}SittingPlaceholder`);
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+
+        container.appendChild(card);
+
+        // Animate card in
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 10);
+
+        // Scroll to the newly added card (only if not silent)
+        if (!silent) {
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+
+            // Show success alert
+            const sittingName = sitting === 'first' ? 'First' : 'Second';
+            showAlert(`Subject field added for ${sittingName} Sitting! Fill in the details below.`, 'success');
+        }
+
+        updateSummary(sitting);
+    }
+
+    function removeSubject(sitting, subjectId) {
+        const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
+        const index = subjects.findIndex(s => s.id === subjectId);
+
+        if (index > -1) {
+            subjects.splice(index, 1);
+            // Reorder remaining subjects
+            subjects.forEach((subject, idx) => {
+                subject.id = idx + 1;
+            });
+        }
+
+        const card = document.getElementById(`subject-card-${sitting}-${subjectId}`);
+        if (card) {
+            // Animate out
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                card.remove();
+
+                // Recreate cards with new IDs
+                recreateSubjectCards(sitting);
+
+                // Show placeholder if no subjects left
+                const container = document.getElementById(sitting === 'first' ? 'firstSittingSubjects' : 'secondSittingSubjects');
+                if (subjects.length === 0) {
+                    const placeholderClass = sitting === 'first' ? 'firstSittingPlaceholder' : 'secondSittingPlaceholder';
+                    const colorClass = sitting === 'first' ? 'blue' : 'green';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = `${placeholderClass} bg-${colorClass}-50 border-2 border-dashed border-${colorClass}-300 rounded-lg p-6 text-center`;
+                    placeholder.innerHTML = `
+                        <i class="fas fa-arrow-up text-${colorClass}-400 text-2xl mb-2"></i>
+                        <p class="text-${colorClass}-700 font-medium">Click "Add ${sitting === 'first' ? 'First' : 'Second'} Sitting Subject" button above to add your subjects</p>
+                        <p class="text-${colorClass}-600 text-sm mt-1">Each subject field will appear here${sitting === 'second' ? ' (if applicable)' : ''}</p>
+                    `;
+                    container.appendChild(placeholder);
+                }
+
+                updateSummary(sitting);
+            }, 300);
+        }
+
+        // Show info alert
+        const sittingName = sitting === 'first' ? 'First' : 'Second';
+        showAlert(`Subject removed from ${sittingName} Sitting`, 'info');
+    }
+
+    function recreateSubjectCards(sitting) {
+        const container = document.getElementById(sitting === 'first' ? 'firstSittingSubjects' : 'secondSittingSubjects');
+        container.innerHTML = '';
+        
+        const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
+        subjects.forEach(subject => {
+            const card = createSubjectCard(sitting, subject.id);
+            container.appendChild(card);
+        });
+    }
+
+    function updateSummary(sitting) {
+        const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
+        const summaryElement = document.getElementById(sitting === 'first' ? 'firstSittingSummary' : 'secondSittingSummary');
+        
+        if (!summaryElement) {
+            console.error(`Summary element not found for ${sitting} sitting`);
+            return;
+        }
+        
+        if (subjects.length === 0) {
+            summaryElement.innerHTML = 'No subjects added yet';
+            return;
+        }
+        
+        const summary = subjects.map(subject => {
+            const subjectName = subjectChoices.find(s => s.value === subject.subject)?.label || 'Not selected';
+            const grade = subject.grade || 'Not selected';
+            return `${subjectName}: ${grade}`;
+        }).join('<br>');
+        
+        summaryElement.innerHTML = summary;
+    }
+
+    // Function to update summary when subject/grade changes
+    function updateSummaryOnChange(sitting, subjectId) {
+        const card = document.getElementById(`subject-card-${sitting}-${subjectId}`);
+        if (card) {
+            const subjectSelect = card.querySelector('select[name*="[subject]"]');
+            const gradeSelect = card.querySelector('select[name*="[grade]"]');
+            
+            if (subjectSelect && gradeSelect) {
+                const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
+                const subjectIndex = subjects.findIndex(s => s.id === subjectId);
+                
+                if (subjectIndex !== -1) {
+                    subjects[subjectIndex].subject = subjectSelect.value;
+                    subjects[subjectIndex].grade = gradeSelect.value;
+                    updateSummary(sitting);
+                }
+            }
+        }
+    }
+
+    // Load existing subjects if available
+    const existingSubjectsData = {{ existing_subjects|safe }};
+    if (existingSubjectsData && Object.keys(existingSubjectsData).length > 0) {
+        // Load first sitting subjects
+        if (existingSubjectsData.first && existingSubjectsData.first.length > 0) {
+            existingSubjectsData.first.forEach((subjectData, index) => {
+                addSubject('first', true); // true = silent mode, no alerts
+                const card = document.querySelector(`#subject-card-first-${index + 1}`);
+                if (card) {
+                    const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                    const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                    if (subjectSelect && gradeSelect) {
+                        subjectSelect.value = subjectData.subject;
+                        gradeSelect.value = subjectData.grade;
+                        // Update the academicSubjects array
+                        academicSubjects.firstSitting[index] = {
+                            id: index + 1,
+                            subject: subjectData.subject,
+                            grade: subjectData.grade
+                        };
+                    }
+                }
+            });
+            updateSummary('first');
+        }
+
+        // Load second sitting subjects
+        if (existingSubjectsData.second && existingSubjectsData.second.length > 0) {
+            existingSubjectsData.second.forEach((subjectData, index) => {
+                addSubject('second', true); // true = silent mode, no alerts
+                const card = document.querySelector(`#subject-card-second-${index + 1}`);
+                if (card) {
+                    const subjectSelect = card.querySelector('select[name*="[subject]"]');
+                    const gradeSelect = card.querySelector('select[name*="[grade]"]');
+                    if (subjectSelect && gradeSelect) {
+                        subjectSelect.value = subjectData.subject;
+                        gradeSelect.value = subjectData.grade;
+                        // Update the academicSubjects array
+                        academicSubjects.secondSitting[index] = {
+                            id: index + 1,
+                            subject: subjectData.subject,
+                            grade: subjectData.grade
+                        };
+                    }
+                }
+            });
+            updateSummary('second');
+        }
+    }
+
+    // Load existing examination details if available
+    const existingExaminationsData = {{ existing_examinations|safe }};
+    if (existingExaminationsData && Object.keys(existingExaminationsData).length > 0) {
+        // Load first sitting examination details
+        if (existingExaminationsData.first && Object.keys(existingExaminationsData.first).length > 0) {
+            const firstExam = existingExaminationsData.first;
+            if (firstExam.exam_type) {
+                document.querySelector('select[name="first_sitting_exam_type"]').value = firstExam.exam_type;
+            }
+            if (firstExam.exam_number) {
+                document.querySelector('input[name="first_sitting_exam_number"]').value = firstExam.exam_number;
+            }
+            if (firstExam.exam_year) {
+                document.querySelector('input[name="first_sitting_exam_year"]').value = firstExam.exam_year;
+            }
+        }
+
+        // Load second sitting examination details
+        if (existingExaminationsData.second && Object.keys(existingExaminationsData.second).length > 0) {
+            const secondExam = existingExaminationsData.second;
+            if (secondExam.exam_type) {
+                document.querySelector('select[name="second_sitting_exam_type"]').value = secondExam.exam_type;
+            }
+            if (secondExam.exam_number) {
+                document.querySelector('input[name="second_sitting_exam_number"]').value = secondExam.exam_number;
+            }
+            if (secondExam.exam_year) {
+                document.querySelector('input[name="second_sitting_exam_year"]').value = secondExam.exam_year;
+            }
+        }
+    }
+
+    // Event listeners for add buttons
+    document.getElementById('addFirstSitting')?.addEventListener('click', () => addSubject('first'));
+    document.getElementById('addSecondSitting')?.addEventListener('click', () => addSubject('second'));
+
+    // Make functions globally available
+    window.addSubject = addSubject;
+    window.removeSubject = removeSubject;
+
+    // Load saved data on page load
+    loadSavedData();
+});
+</script>
+{% endblock %}

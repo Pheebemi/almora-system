@@ -1,0 +1,488 @@
+{% extends 'app_manager/base.html' %}
+
+{% block title %}{{ applicant.user.get_full_name }}{% endblock %}
+{% block page_title %}Applicant Detail{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+    <!-- Back + Header -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'accounts:app_manager_applicants_list' %}"
+           class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-indigo-600 transition">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Applicants
+        </a>
+        <span class="text-sm text-gray-500">Applied: {{ applicant.user.date_joined|date:"d M, Y" }}</span>
+    </div>
+
+    {% if not screening_form %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center space-x-3">
+        <i class="fas fa-exclamation-triangle text-amber-500 text-lg"></i>
+        <p class="text-sm text-amber-800 font-medium">This applicant has not submitted a screening form yet. Showing registration info only.</p>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+
+        <!-- LEFT COLUMN -->
+        <div class="xl:col-span-2 space-y-5">
+
+            <!-- Personal Information (from screening form) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-user text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Personal Information</h2>
+                    {% if screening_form %}
+                    <span class="ml-auto text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">From Screening Form</span>
+                    {% endif %}
+                </div>
+                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                    {% if screening_form %}
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">First Name</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ screening_form.first_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Middle Name</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ screening_form.middle_name|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Surname</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ screening_form.surname }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Date of Birth</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.date_of_birth|date:"d M, Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Sex</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.get_sex_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Email</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Phone Number</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.phone_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">State of Origin</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.state_of_origin }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Local Government</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.local_government }}</p>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <p class="text-xs text-gray-500 mb-1">Contact Address</p>
+                        <p class="text-sm text-gray-800">{{ screening_form.contact_address }}</p>
+                    </div>
+                    {% else %}
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Full Name</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ applicant.user.get_full_name|upper }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Email</p>
+                        <p class="text-sm text-gray-800">{{ applicant.user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Phone Number</p>
+                        <p class="text-sm text-gray-800">{{ applicant.phone_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">State of Origin</p>
+                        <p class="text-sm text-gray-800">{{ applicant.state }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Programme / Application Details -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Programme & JAMB Details</h2>
+                </div>
+                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Applied Program</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ applicant.programs.name|default:"Not selected" }}</p>
+                        <p class="text-xs text-gray-500">{{ applicant.programs.get_program_type_display|default:"" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Mode of Entry</p>
+                        <p class="text-sm text-gray-800">{{ applicant.get_mode_display }}</p>
+                    </div>
+
+                    {% if screening_form %}
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">JAMB Registration No.</p>
+                        <p class="text-sm font-mono font-semibold text-gray-900">{{ screening_form.jamb_reg_no }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">JAMB Score</p>
+                        <p class="text-2xl font-bold text-indigo-600">{{ screening_form.jamb_score }}</p>
+                    </div>
+
+                    <!-- Programme Choices -->
+                    <div class="sm:col-span-2 pt-2 border-t border-gray-100">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Course Preferences</p>
+                        <div class="space-y-2">
+                            {% if screening_form.first_choice %}
+                            <div class="flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+                                <p class="text-sm text-gray-800 font-medium">{{ screening_form.first_choice.name }}</p>
+                                <span class="text-xs text-gray-400">(First Choice)</span>
+                            </div>
+                            {% endif %}
+                            {% if screening_form.second_choice %}
+                            <div class="flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-full bg-indigo-400 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+                                <p class="text-sm text-gray-800">{{ screening_form.second_choice.name }}</p>
+                                <span class="text-xs text-gray-400">(Second Choice)</span>
+                            </div>
+                            {% endif %}
+                            {% if screening_form.third_choice %}
+                            <div class="flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-full bg-indigo-200 text-indigo-800 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+                                <p class="text-sm text-gray-800">{{ screening_form.third_choice.name }}</p>
+                                <span class="text-xs text-gray-400">(Third Choice)</span>
+                            </div>
+                            {% endif %}
+                            {% if not screening_form.first_choice %}
+                            <p class="text-sm text-gray-400">No course choices recorded</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Academic Qualifications -->
+            {% if screening_form %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-school text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Academic Qualifications</h2>
+                </div>
+                <div class="p-5 space-y-5">
+                    <!-- Schools -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Primary School</p>
+                            <p class="text-sm font-medium text-gray-900">{{ screening_form.primary_school }}</p>
+                            <p class="text-xs text-gray-500">{{ screening_form.primary_school_dates }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Secondary School</p>
+                            <p class="text-sm font-medium text-gray-900">{{ screening_form.secondary_school }}</p>
+                            <p class="text-xs text-gray-500">{{ screening_form.secondary_school_dates }}</p>
+                        </div>
+                    </div>
+
+                    <!-- First Sitting -->
+                    {% with first_exam=screening_form.get_first_sitting_examination first_subjects=screening_form.get_first_sitting_subjects %}
+                    {% if first_subjects %}
+                    <div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="text-xs font-bold text-white bg-indigo-600 px-2 py-0.5 rounded">1st Sitting</span>
+                            {% if first_exam %}
+                            <span class="text-xs text-gray-500">{{ first_exam.get_exam_type_display }} · No: {{ first_exam.exam_number }} · Year: {{ first_exam.exam_year }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 rounded-l">Subject</th>
+                                        <th class="text-center px-3 py-2 text-xs font-semibold text-gray-600 rounded-r">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% for subj in first_subjects %}
+                                    <tr>
+                                        <td class="px-3 py-2 text-gray-800">{{ subj.get_subject_display }}</td>
+                                        <td class="px-3 py-2 text-center">
+                                            <span class="font-bold px-2 py-0.5 rounded text-xs
+                                                {% if subj.grade in 'A1,B2,B3,C4,C5,C6' %}bg-green-100 text-green-700
+                                                {% else %}bg-red-100 text-red-700{% endif %}">
+                                                {{ subj.grade }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Second Sitting -->
+                    {% with second_exam=screening_form.get_second_sitting_examination second_subjects=screening_form.get_second_sitting_subjects %}
+                    {% if second_subjects %}
+                    <div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="text-xs font-bold text-white bg-gray-500 px-2 py-0.5 rounded">2nd Sitting</span>
+                            {% if second_exam %}
+                            <span class="text-xs text-gray-500">{{ second_exam.get_exam_type_display }} · No: {{ second_exam.exam_number }} · Year: {{ second_exam.exam_year }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 rounded-l">Subject</th>
+                                        <th class="text-center px-3 py-2 text-xs font-semibold text-gray-600 rounded-r">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% for subj in second_subjects %}
+                                    <tr>
+                                        <td class="px-3 py-2 text-gray-800">{{ subj.get_subject_display }}</td>
+                                        <td class="px-3 py-2 text-center">
+                                            <span class="font-bold px-2 py-0.5 rounded text-xs
+                                                {% if subj.grade in 'A1,B2,B3,C4,C5,C6' %}bg-green-100 text-green-700
+                                                {% else %}bg-red-100 text-red-700{% endif %}">
+                                                {{ subj.grade }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-file-alt text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Uploaded Documents</h2>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% include 'app_manager/partials/doc_row.html' with form=screening_form field='waec_result' label='WAEC Result' file=screening_form.waec_result status=screening_form.waec_result_status comment=screening_form.waec_result_comment %}
+                    {% include 'app_manager/partials/doc_row.html' with form=screening_form field='jamb_result_slip' label='JAMB Result Slip' file=screening_form.jamb_result_slip status=screening_form.jamb_result_slip_status comment=screening_form.jamb_result_slip_comment %}
+                    {% include 'app_manager/partials/doc_row.html' with form=screening_form field='passport_photo' label='Passport Photo' file=screening_form.passport_photo status=screening_form.passport_photo_status comment=screening_form.passport_photo_comment %}
+                    {% include 'app_manager/partials/doc_row.html' with form=screening_form field='birth_certificate' label='Birth Certificate' file=screening_form.birth_certificate status=screening_form.birth_certificate_status comment=screening_form.birth_certificate_comment %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payment Information -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-credit-card text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Payment Information</h2>
+                </div>
+                <div class="p-5">
+                    {% if payment %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Amount Paid</p>
+                            <p class="text-2xl font-bold text-green-600">₦{{ payment.amount|floatformat:2 }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Reference</p>
+                            <p class="text-sm font-mono text-gray-800">{{ payment.reference }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Payment Date</p>
+                            <p class="text-sm text-gray-800">{{ payment.payment_date|date:"d M, Y - h:i A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Status</p>
+                            <span class="inline-flex items-center text-xs font-semibold bg-green-100 text-green-700 px-2.5 py-1 rounded-full">
+                                <i class="fas fa-check-circle mr-1"></i>Verified
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fas fa-credit-card text-3xl mb-2"></i>
+                        <p class="text-sm font-medium text-gray-500">No payment recorded</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="space-y-5">
+
+            <!-- Status Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-tasks text-indigo-500"></i>
+                    <h2 class="font-semibold text-gray-800">Admission Status</h2>
+                </div>
+                <div class="p-5">
+                    <!-- Current Status -->
+                    <div class="mb-4 p-3 rounded-lg
+                        {% if applicant.status == 'approved' %}bg-green-50 border border-green-200
+                        {% elif applicant.status == 'rejected' %}bg-red-50 border border-red-200
+                        {% elif applicant.status == 'pending_review' %}bg-yellow-50 border border-yellow-200
+                        {% else %}bg-gray-50 border border-gray-200{% endif %}">
+                        <p class="text-xs text-gray-500 mb-1">Current Status</p>
+                        <p class="font-bold text-sm
+                            {% if applicant.status == 'approved' %}text-green-700
+                            {% elif applicant.status == 'rejected' %}text-red-700
+                            {% elif applicant.status == 'pending_review' %}text-yellow-700
+                            {% else %}text-gray-600{% endif %}">
+                            {% if applicant.status == 'approved' %}<i class="fas fa-check-circle mr-1"></i>Admitted
+                            {% elif applicant.status == 'rejected' %}<i class="fas fa-times-circle mr-1"></i>Rejected
+                            {% elif applicant.status == 'pending_review' %}<i class="fas fa-clock mr-1"></i>Pending Review
+                            {% else %}<i class="fas fa-minus-circle mr-1"></i>Not Applied{% endif %}
+                        </p>
+                    </div>
+
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change_status">
+
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-yellow-50 transition">
+                                <input type="radio" name="status" value="pending_review" {% if applicant.status == 'pending_review' %}checked{% endif %} class="text-yellow-500">
+                                <span class="text-sm font-medium text-gray-700"><i class="fas fa-clock text-yellow-500 mr-1"></i>Pending Review</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-green-50 transition">
+                                <input type="radio" name="status" value="approved" {% if applicant.status == 'approved' %}checked{% endif %} class="text-green-500">
+                                <span class="text-sm font-medium text-gray-700"><i class="fas fa-check-circle text-green-500 mr-1"></i>Admit Applicant</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-red-50 transition">
+                                <input type="radio" name="status" value="rejected" {% if applicant.status == 'rejected' %}checked{% endif %} class="text-red-500">
+                                <span class="text-sm font-medium text-gray-700"><i class="fas fa-times-circle text-red-500 mr-1"></i>Reject Application</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Comment (Optional)</label>
+                            <textarea name="comment" rows="3" placeholder="Add a reason or comment..."
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
+                            <i class="fas fa-save mr-2"></i>Save Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Internal Notes -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-sticky-note text-yellow-500"></i>
+                    <h2 class="font-semibold text-gray-800">Internal Notes</h2>
+                </div>
+                <div class="p-5 space-y-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_note">
+                        <textarea name="note" rows="3" placeholder="Add an internal note..."
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 resize-none mb-2"></textarea>
+                        <button type="submit" class="w-full bg-yellow-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition">
+                            <i class="fas fa-plus mr-1"></i>Add Note
+                        </button>
+                    </form>
+
+                    {% if notes %}
+                    <div class="space-y-3 max-h-52 overflow-y-auto">
+                        {% for note in notes %}
+                        <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-3">
+                            <p class="text-xs text-gray-800">{{ note.note }}</p>
+                            <div class="mt-1.5 flex items-center justify-between">
+                                <span class="text-xs text-gray-500 font-medium">{{ note.manager.get_full_name }}</span>
+                                <span class="text-xs text-gray-400">{{ note.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center space-x-2">
+                    <i class="fas fa-history text-gray-400"></i>
+                    <h2 class="font-semibold text-gray-800">Activity Timeline</h2>
+                </div>
+                <div class="p-5">
+                    {% if activities %}
+                    <div class="space-y-4 max-h-72 overflow-y-auto">
+                        {% for activity in activities %}
+                        <div class="flex items-start space-x-3">
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
+                                {% if 'verified' in activity.action %}bg-green-100
+                                {% elif 'rejected' in activity.action %}bg-red-100
+                                {% elif 'status' in activity.action %}bg-blue-100
+                                {% else %}bg-gray-100{% endif %}">
+                                <i class="fas fa-{% if 'verified' in activity.action %}check{% elif 'rejected' in activity.action %}times{% elif 'status' in activity.action %}exchange-alt{% else %}edit{% endif %} text-xs
+                                    {% if 'verified' in activity.action %}text-green-600
+                                    {% elif 'rejected' in activity.action %}text-red-600
+                                    {% elif 'status' in activity.action %}text-blue-600
+                                    {% else %}text-gray-600{% endif %}"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-medium text-gray-800">{{ activity.get_action_display }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ activity.details|truncatechars:70 }}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">
+                                    {{ activity.manager.get_full_name|default:"System" }} · {{ activity.timestamp|date:"d M, Y h:i A" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-gray-400 text-center py-4">No activity yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Document Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Reject Document</h3>
+        <p class="text-sm text-gray-500 mb-4">Provide a reason. The applicant will be notified to re-upload.</p>
+        <form method="POST" id="rejectForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject_document">
+            <input type="hidden" name="form_id" id="rejectFormId">
+            <input type="hidden" name="doc_field" id="rejectDocField">
+            <textarea name="comment" rows="4" required placeholder="Enter reason for rejection..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-red-500 resize-none mb-4"></textarea>
+            <div class="flex space-x-3">
+                <button type="button" onclick="closeRejectModal()" class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700">
+                    <i class="fas fa-times mr-1"></i>Reject Document
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openRejectModal(formId, docField) {
+        document.getElementById('rejectFormId').value = formId;
+        document.getElementById('rejectDocField').value = docField;
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRejectModal();
+    });
+</script>
+{% endblock %}

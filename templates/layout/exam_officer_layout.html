@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Exam Officer Dashboard {% endblock %}
+
+{% block content %}
+
+<main>
+    <div id="main-wrapper" class="flex">
+
+        {% include 'includes/exam-officer-sidebar.html' %}
+
+        {% block layout %}
+        {% endblock %}
+    </div>
+</main>
+
+{% endblock %}

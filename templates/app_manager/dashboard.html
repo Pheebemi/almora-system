@@ -1,0 +1,245 @@
+{% extends 'app_manager/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600"></i>
+                </div>
+                <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">+{{ new_applicants }} this week</span>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ total_applicants }}</p>
+            <p class="text-sm text-gray-500 mt-1">Total Applicants</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clock text-yellow-600"></i>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ pending_applicants }}</p>
+            <p class="text-sm text-gray-500 mt-1">Pending Review</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ admitted_applicants }}</p>
+            <p class="text-sm text-gray-500 mt-1">Admitted</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-times-circle text-red-600"></i>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ rejected_applicants }}</p>
+            <p class="text-sm text-gray-500 mt-1">Rejected</p>
+        </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-indigo-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Screening Forms</p>
+                    <p class="text-xl font-bold text-gray-900">{{ total_forms }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Pending Documents</p>
+                    <p class="text-xl font-bold text-gray-900">{{ pending_documents }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Payments Received</p>
+                    <p class="text-xl font-bold text-gray-900">{{ total_payments }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Applications by Program Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar mr-2 text-indigo-500"></i>
+                Applications by Program
+            </h2>
+            <div style="position: relative; height: 220px;">
+                <canvas id="programChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Application Status Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-pie mr-2 text-indigo-500"></i>
+                Application Status Breakdown
+            </h2>
+            <div style="position: relative; height: 220px;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">
+                <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-2 gap-3">
+                <a href="{% url 'accounts:app_manager_applicants_list' %}"
+                   class="flex items-center space-x-3 p-4 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition">
+                    <i class="fas fa-users text-indigo-600 text-lg"></i>
+                    <span class="text-sm font-medium text-indigo-800">View Applicants</span>
+                </a>
+                <a href="{% url 'accounts:app_manager_applicants_list' %}?status=pending_review"
+                   class="flex items-center space-x-3 p-4 bg-yellow-50 rounded-xl hover:bg-yellow-100 transition">
+                    <i class="fas fa-clock text-yellow-600 text-lg"></i>
+                    <span class="text-sm font-medium text-yellow-800">Pending Review</span>
+                </a>
+                <a href="{% url 'accounts:app_manager_documents' %}"
+                   class="flex items-center space-x-3 p-4 bg-orange-50 rounded-xl hover:bg-orange-100 transition">
+                    <i class="fas fa-file-check text-orange-600 text-lg"></i>
+                    <span class="text-sm font-medium text-orange-800">Verify Documents</span>
+                </a>
+                <a href="{% url 'accounts:app_manager_merit_list' %}"
+                   class="flex items-center space-x-3 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition">
+                    <i class="fas fa-trophy text-green-600 text-lg"></i>
+                    <span class="text-sm font-medium text-green-800">Merit List</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">
+                <i class="fas fa-history mr-2 text-gray-500"></i>
+                Recent Activity
+            </h2>
+            {% if recent_activities %}
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                {% for activity in recent_activities %}
+                <div class="flex items-start space-x-3">
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
+                        {% if 'verified' in activity.action %}bg-green-100
+                        {% elif 'rejected' in activity.action %}bg-red-100
+                        {% elif 'status' in activity.action %}bg-blue-100
+                        {% else %}bg-gray-100{% endif %}">
+                        <i class="fas fa-{% if 'verified' in activity.action %}check{% elif 'rejected' in activity.action %}times{% elif 'status' in activity.action %}exchange-alt{% else %}edit{% endif %} text-xs
+                            {% if 'verified' in activity.action %}text-green-600
+                            {% elif 'rejected' in activity.action %}text-red-600
+                            {% elif 'status' in activity.action %}text-blue-600
+                            {% else %}text-gray-600{% endif %}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium text-gray-800 truncate">{{ activity.applicant.user.get_full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ activity.get_action_display }}</p>
+                        <p class="text-xs text-gray-400">{{ activity.timestamp|timesince }} ago</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-history text-3xl mb-2"></i>
+                <p class="text-sm">No recent activity</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Applications by Program chart
+    const programData = {{ applications_by_program|safe }};
+    const programLabels = programData.map(d => d.programs__name || 'Unknown');
+    const programCounts = programData.map(d => d.count);
+
+    new Chart(document.getElementById('programChart'), {
+        type: 'bar',
+        data: {
+            labels: programLabels,
+            datasets: [{
+                label: 'Applicants',
+                data: programCounts,
+                backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Status breakdown pie chart
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Admitted', 'Rejected', 'Not Applied'],
+            datasets: [{
+                data: [
+                    {{ pending_applicants }},
+                    {{ admitted_applicants }},
+                    {{ rejected_applicants }},
+                    {{ total_applicants }} - {{ pending_applicants }} - {{ admitted_applicants }} - {{ rejected_applicants }}
+                ],
+                backgroundColor: ['#fbbf24', '#10b981', '#ef4444', '#e5e7eb'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { padding: 15, font: { size: 12 } } }
+            },
+            cutout: '65%'
+        }
+    });
+</script>
+{% endblock %}

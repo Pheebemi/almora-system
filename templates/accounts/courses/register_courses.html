@@ -1,0 +1,165 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Register Courses{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Courses /</span> Course Registration</h1>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <!-- Registration Summary -->
+            <div class="mb-6 bg-blue-50 rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-medium text-blue-900">Current Registration</h3>
+                        <p class="text-blue-700">{{ total_registered }} courses registered ({{ total_credits }} credits)</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-blue-600">Active Registration Session</p>
+                        <p class="font-medium text-blue-900">{{ request.user.studentprofile.current_session.name }}</p>
+                    </div>
+                </div>
+                   <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm">
+                    <p class="font-semibold mb-1">ℹ️ Historical Integrity Notice:</p>
+                    <p>You are currently registering for the <strong>{{ request.user.studentprofile.current_session.name }}</strong> session. Carry-over courses selected here will be added to your current registration and will <strong>not</strong> modify or delete your previous years' academic records.</p>
+                </div>
+            </div>
+
+            <form method="POST" class="space-y-8">
+                {% csrf_token %}
+
+                <!-- Carry-over Courses Section -->
+                {% if has_carry_over_courses %}
+                <div class="border-l-4 border-orange-500 pl-4 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Select Carry-over Courses (If Any)</h3>
+                    <p class="text-sm text-gray-600 mb-4">Choose courses from previous levels that you need to retake.</p>
+
+                    {% if carry_over_courses.first %}
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-orange-800 mb-3">First Semester – Carry-over Courses</h4>
+                        <div class="grid gap-4">
+                            {% for course_data in carry_over_courses.first %}
+                            <div class="flex items-center space-x-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                <input type="checkbox" name="courses" value="{{ course_data.course.id }}"
+                                       {% if course_data.course.id in registered_course_ids %}checked{% endif %}
+                                       class="rounded border-orange-300 text-orange-600 shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-medium text-gray-900">{{ course_data.course.code }} – {{ course_data.course.title }}</h4>
+                                    <p class="text-sm text-gray-500">{{ course_data.course.credits }} Credits</p>
+                                    <div class="flex gap-2 mt-1">
+                                        <span class="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-md font-medium">{{ course_data.level_display }}</span>
+                                        <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md font-medium">{{ course_data.course.academic_session.name }} Session</span>
+                                    </div>
+                                    {% if course_data.course.description %}<p class="text-sm text-gray-600 mt-1">{{ course_data.course.description }}</p>{% endif %}
+                                </div>
+                                {% if course_data.course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if carry_over_courses.second %}
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-orange-800 mb-3">Second Semester – Carry-over Courses</h4>
+                        <div class="grid gap-4">
+                            {% for course_data in carry_over_courses.second %}
+                            <div class="flex items-center space-x-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                <input type="checkbox" name="courses" value="{{ course_data.course.id }}"
+                                       {% if course_data.course.id in registered_course_ids %}checked{% endif %}
+                                       class="rounded border-orange-300 text-orange-600 shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-medium text-gray-900">{{ course_data.course.code }} – {{ course_data.course.title }}</h4>
+                                    <p class="text-sm text-gray-500">{{ course_data.course.credits }} Credits</p>
+                                    <div class="flex gap-2 mt-1">
+                                        <span class="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-md font-medium">{{ course_data.level_display }}</span>
+                                        <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md font-medium">{{ course_data.course.academic_session.name }} Session</span>
+                                    </div>
+                                    {% if course_data.course.description %}<p class="text-sm text-gray-600 mt-1">{{ course_data.course.description }}</p>{% endif %}
+                                </div>
+                                {% if course_data.course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Current Level Courses Section -->
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Current Level Courses ({{ request.user.studentprofile.current_level.display_name }})</h3>
+
+                    {% if current_level_courses.first %}
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-blue-800 mb-3">First Semester Courses</h4>
+                        <div class="grid gap-4">
+                            {% for course_data in current_level_courses.first %}
+                            <div class="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
+                                <input type="checkbox" name="courses" value="{{ course_data.course.id }}"
+                                       {% if course_data.course.id in registered_course_ids %}checked{% endif %}
+                                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-medium text-gray-900">{{ course_data.course.code }} – {{ course_data.course.title }}</h4>
+                                    <p class="text-sm text-gray-500">{{ course_data.course.credits }} Credits</p>
+                                    {% if course_data.course.description %}<p class="text-sm text-gray-600">{{ course_data.course.description }}</p>{% endif %}
+                                </div>
+                                {% if course_data.course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if current_level_courses.second %}
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-blue-800 mb-3">Second Semester Courses</h4>
+                        <div class="grid gap-4">
+                            {% for course_data in current_level_courses.second %}
+                            <div class="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
+                                <input type="checkbox" name="courses" value="{{ course_data.course.id }}"
+                                       {% if course_data.course.id in registered_course_ids %}checked{% endif %}
+                                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-medium text-gray-900">{{ course_data.course.code }} – {{ course_data.course.title }}</h4>
+                                    <p class="text-sm text-gray-500">{{ course_data.course.credits }} Credits</p>
+                                    {% if course_data.course.description %}<p class="text-sm text-gray-600">{{ course_data.course.description }}</p>{% endif %}
+                                </div>
+                                {% if course_data.course.id in registered_course_ids %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if has_carry_over_courses or current_level_courses.first or current_level_courses.second %}
+                <div class="flex justify-end pt-6 border-t">
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium">
+                        Register Selected Courses
+                    </button>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-500">No courses available for registration at this time.</p>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

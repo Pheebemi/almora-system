@@ -1,0 +1,270 @@
+{% extends 'layout/exam_officer_layout.html' %}
+{% load static %}
+
+{% block title %}Student GPAs{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Student GPAs & CGPAs</h1>
+                        <p class="text-indigo-200 text-lg">View academic performance for {{ selected_session.name }} session</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        {% if filter_department and filter_level %}
+                            <button onclick="window.print()" class="inline-flex items-center px-5 py-2.5 bg-white text-indigo-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
+                                <i class="ti ti-printer mr-2"></i>
+                                Print Report
+                            </button>
+                        {% else %}
+                            <button disabled class="inline-flex items-center px-5 py-2.5 bg-white/30 text-white/60 rounded-xl font-semibold cursor-not-allowed shadow-lg" title="Select both department and level to enable printing">
+                                <i class="ti ti-printer mr-2"></i>
+                                Print Report
+                            </button>
+                            <span class="text-xs text-indigo-200 flex items-center gap-1">
+                                <i class="ti ti-info-circle text-sm"></i>
+                                Select department &amp; level to enable printing
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 no-print">
+                <form method="GET" class="flex flex-wrap items-end gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Academic Session</label>
+                        <select name="session" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            {% for session in available_sessions %}
+                            <option value="{{ session.id }}" {% if session.id == selected_session.id %}selected{% endif %}>
+                                {{ session.name }} Session
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                        <select name="level" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            <option value="">All Levels</option>
+                            {% for level in available_levels %}
+                            <option value="{{ level.id }}" {% if level.id|stringformat:"s" == filter_level %}selected{% endif %}>
+                                {{ level.display_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                        <select name="department" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border">
+                            <option value="">All Departments</option>
+                            {% for dept in available_departments %}
+                            <option value="{{ dept.id }}" {% if dept.id|stringformat:"s" == filter_department %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
+                            <i class="ti ti-filter mr-1.5"></i> Filter
+                        </button>
+                        {% if filter_level or filter_department %}
+                        <a href="?session={{ selected_session.id }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+                            Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Students Found</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_records }}</p>
+                        </div>
+                        <div class="p-2.5 bg-indigo-100 rounded-lg">
+                            <i class="ti ti-users text-xl text-indigo-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Header (hidden on screen, visible on print) -->
+            <div class="print-header" style="display:none;">
+                <div style="text-align:center; margin-bottom:16px;">
+                    <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo" style="width:80px;height:80px;display:block;margin:0 auto 10px;">
+                    <div style="font-size:22px;font-weight:bold;text-transform:uppercase;font-family:'Times New Roman',serif;">Almora Polytechnic Pantisawa</div>
+                    <div style="font-size:13px;font-style:italic;margin-top:2px;font-family:'Times New Roman',serif;">...Centre of Excellence</div>
+                    <div style="font-size:11px;color:#555;margin-top:3px;font-family:'Times New Roman',serif;">Pantisawa, Nigeria</div>
+                </div>
+                <hr style="border:none;border-top:2px solid #000;margin:10px 0 4px;">
+                <hr style="border:none;border-top:1px solid #000;margin-bottom:14px;">
+                <div style="text-align:center;margin-bottom:6px;">
+                    <span style="font-size:17px;font-weight:bold;text-transform:uppercase;font-family:'Times New Roman',serif;letter-spacing:1px;">Academic Performance Report</span>
+                </div>
+                <div style="text-align:center;font-size:12px;color:#333;margin-bottom:14px;font-family:'Times New Roman',serif;">
+                    Session: <strong>{{ selected_session.name }}</strong>
+                    {% for dept in available_departments %}{% if dept.id|stringformat:"s" == filter_department %}&nbsp;&nbsp;|&nbsp;&nbsp; Department: <strong>{{ dept.name }}</strong>{% endif %}{% endfor %}
+                    {% for level in available_levels %}{% if level.id|stringformat:"s" == filter_level %}&nbsp;&nbsp;|&nbsp;&nbsp; Level: <strong>{{ level.display_name }}</strong>{% endif %}{% endfor %}
+                    &nbsp;&nbsp;|&nbsp;&nbsp; Printed: <strong>{% now "d F, Y" %}</strong>
+                </div>
+            </div>
+
+            <!-- GPA Table -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden print-area">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="ti ti-report-analytics mr-2 text-indigo-500"></i>
+                        Academic Performance Records
+                    </h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S/N</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Details</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">1st Sem GPA</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2nd Sem GPA</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider bg-indigo-50 border-l border-indigo-100">CGPA</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider bg-indigo-50 border-r border-indigo-100 no-print">Class</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for student_id, data in student_gpas.items %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900">{{ data.student.user.get_full_name }}</span>
+                                        <span class="text-xs text-gray-500">{{ data.student.user.id_number }}</span>
+                                        <span class="text-xs text-indigo-600 mt-0.5">{{ data.student.department.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                                    {% if data.first_semester %}
+                                        {{ data.first_semester.level.display_name }}
+                                    {% elif data.second_semester %}
+                                        {{ data.second_semester.level.display_name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if data.first_semester %}
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-sm font-semibold text-gray-900">{{ data.first_semester.gpa }}</span>
+                                            <span class="text-xs text-gray-500">{{ data.first_semester.total_credits }} units</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if data.second_semester %}
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-sm font-semibold text-gray-900">{{ data.second_semester.gpa }}</span>
+                                            <span class="text-xs text-gray-500">{{ data.second_semester.total_credits }} units</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/30 border-l border-indigo-100">
+                                    <span class="inline-flex px-3 py-1 text-sm font-bold rounded-full 
+                                        {% if data.student.programme_type == 'nd' %}
+                                            {% if data.cgpa >= 3.5 %}bg-green-100 text-green-800
+                                            {% elif data.cgpa >= 3.0 %}bg-blue-100 text-blue-800
+                                            {% elif data.cgpa >= 2.5 %}bg-yellow-100 text-yellow-800
+                                            {% elif data.cgpa >= 2.0 %}bg-orange-100 text-orange-800
+                                            {% else %}bg-red-100 text-red-800{% endif %}
+                                        {% else %}
+                                            {% if data.cgpa >= 4.5 %}bg-green-100 text-green-800
+                                            {% elif data.cgpa >= 3.5 %}bg-blue-100 text-blue-800
+                                            {% elif data.cgpa >= 2.4 %}bg-yellow-100 text-yellow-800
+                                            {% elif data.cgpa >= 1.5 %}bg-orange-100 text-orange-800
+                                            {% else %}bg-red-100 text-red-800{% endif %}
+                                        {% endif %}">
+                                        {{ data.cgpa }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/30 border-r border-indigo-100 no-print">
+                                    <span class="text-xs font-semibold text-indigo-700">
+                                        {{ data.latest_record.get_classification }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                                        <i class="ti ti-file-analytics text-2xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-900 mb-1">No Records Found</p>
+                                    <p class="text-gray-500 text-sm">No GPA records found for the selected criteria.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<style>
+@media print {
+    @page { margin: 12mm 15mm; size: landscape; }
+
+    body * { visibility: hidden; }
+
+    /* show print header */
+    .print-header,
+    .print-header * { visibility: visible !important; display: revert !important; }
+
+    /* show table */
+    .print-area, .print-area * { visibility: visible; }
+
+    /* layout */
+    .print-header {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0 15mm;
+        box-sizing: border-box;
+    }
+    .print-area {
+        position: absolute;
+        left: 0;
+        top: 260px;   /* sit below the header */
+        width: 100%;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        border-radius: 0 !important;
+    }
+
+    .no-print { display: none !important; }
+
+    /* clean up table for print */
+    .print-area thead { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-area th, .print-area td { font-size: 11px !important; padding: 6px 10px !important; }
+}
+</style>
+{% endblock %}

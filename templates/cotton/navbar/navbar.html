@@ -1,0 +1,237 @@
+{% load static %}
+
+<!--  Header Start -->
+<header class="container full-container w-full text-sm py-5 xl:px-9 px-5">
+  <!-- ========== HEADER ========== -->
+  <nav
+    class="w-full flex items-center justify-end"
+    aria-label="Global"
+  >
+    <!-- Mobile menu button (left side) -->
+    <div class="flex items-center gap-4 mr-auto">
+      <div class="relative xl:hidden">
+        <a
+          class="text-xl icon-hover cursor-pointer text-heading"
+          id="headerCollapse"
+          data-hs-overlay="#application-sidebar-brand"
+          aria-controls="application-sidebar-brand"
+          aria-label="Toggle navigation"
+          href="javascript:void(0)"
+        >
+          <i class="ti ti-menu-2 relative z-1"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right side navigation items -->
+    <div class="flex items-center gap-4">
+      <!-- Notifications -->
+      <div class="relative">
+        <button
+            class="relative hs-dropdown-toggle cursor-pointer align-middle rounded-full"
+            onclick="toggleNotificationDropdown()"
+            aria-expanded="false"
+            aria-controls="notificationDropdown"
+            tabindex="0"
+        >
+            <i class="ti ti-bell-ringing text-xl relative z-[1]" aria-hidden="true"></i>
+            {% if notifications.count > 0 %}
+                <div class="absolute inline-flex items-center justify-center text-white text-[11px] font-medium bg-blue-600 w-5 h-5 rounded-full -top-[12px] -right-[12px]">
+                    {{ notifications.count }}
+                    <span class="sr-only">Unread notifications</span>
+                </div>
+            {% endif %}
+        </button>
+        <div
+            id="notificationDropdown"
+            class="hs-dropdown-menu transition-[opacity,margin] border border-gray-400 rounded-md duration-300 opacity-0 mt-2 min-w-max w-[300px] hidden z-[9999] absolute right-0 top-full"
+            aria-labelledby="notificationDropdown"
+            tabindex="-1"
+        >
+            <div>
+                <h3 class="text-gray-600 font-semibold text-base px-6 py-3">Notifications</h3>
+                <ul class="list-none flex flex-col">
+                    {% if notifications.count > 0 %}
+                        {% for notification in notifications %}
+                            <li>
+                                <a
+                                    href="{% url 'dashboard:mark_notification_as_read' notification.id %}"
+                                    class="flex gap-2 items-center px-4 py-[6px] hover:bg-blue-100"
+                                    tabindex="0"
+                                >
+                                    <p class="text-sm text-gray-500">{{ notification.message }}</p>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="px-4 py-[6px]">
+                            <p class="text-sm text-gray-500">No new notifications.</p>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+      </div>
+
+      <!-- Support Button -->
+      <button
+        class="btn font-medium hover:bg-green-700 py-2 text-white bg-green-600 rounded-full"
+        onclick="openSupportModal()"
+      >
+        Support
+      </button>
+
+      <!-- User Profile Dropdown -->
+      <div class="relative inline-flex" id="profileDropdownWrapper">
+        <button
+          type="button"
+          class="relative cursor-pointer align-middle rounded-full p-0 border-0 bg-transparent"
+          onclick="toggleProfileDropdown()"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-controls="profileDropdown"
+        >
+         <img
+    class="object-cover w-9 h-9 rounded-full"
+    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/images/default-profile.png' %}{% endif %}"
+    alt="Profile"
+    aria-hidden="true"
+  />
+        </button>
+          <div
+            id="profileDropdown"
+            class="card transition-[opacity,margin] border border-gray-400 rounded-[7px] duration mt-2 min-w-max w-[200px] z-[9999] absolute right-0 top-full hidden opacity-0"
+            role="menu"
+            aria-orientation="vertical"
+          >
+            <div class="card-body p-0 py-2">
+              <a
+                href="{% if user.user_type == 'student' %}{% url 'accounts:student_profile' %}{% else %}{% url 'accounts:staff_profile' %}{% endif %}"
+                class="flex gap-2 items-center px-4 py-[6px] hover:bg-blue-100"
+              >
+                <i class="ti ti-user text-gray-500 text-xl"></i>
+                <p class="text-sm text-gray-500">My Profile</p>
+              </a>
+              <a
+                href="javscript:void(0)"
+                class="flex gap-2 items-center px-4 py-[6px] hover:bg-blue-100"
+              >
+                <i class="ti ti-mail text-gray-500 text-xl"></i>
+                <p class="text-sm text-gray-500">My Account</p>
+              </a>
+              <a
+                href="javscript:void(0)"
+                class="flex gap-2 items-center px-4 py-[6px] hover:bg-blue-100"
+              >
+                <i class="ti ti-list-check text-gray-500 text-xl"></i>
+                <p class="text-sm text-gray-500">My Task</p>
+              </a>
+              <div class="px-4 mt-[7px] grid">
+                <a
+                  href="{% url 'accounts:logout' %}"
+                  class="btn-outline-primary w-full hover:bg-blue-600 hover:text-white"
+                  >Logout</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </nav>
+
+  <!-- ========== END HEADER ========== -->
+</header>
+<!--  Header End -->
+<div id="supportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+      <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-900">Contact Support</h2>
+          <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeSupportModal()">
+              <i class="ti ti-x text-xl"></i>
+          </button>
+      </div>
+      <form id="supportForm" method="post" action="{% url 'dashboard:support' %}">
+          {% csrf_token %}
+          <div class="mb-4">
+              <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+              <input type="text" id="subject" name="subject" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                     placeholder="Enter subject" required>
+          </div>
+          <div class="mb-6">
+              <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+              <textarea id="message" name="message" rows="4" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                        placeholder="Describe your issue or question..." required></textarea>
+          </div>
+          <div class="flex justify-end space-x-3">
+              <button type="button" 
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" 
+                      onclick="closeSupportModal()">
+                  Cancel
+              </button>
+              <button type="submit" 
+                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Submit Request
+              </button>
+          </div>
+      </form>
+  </div>
+</div>
+
+<script>
+  function openSupportModal() {
+      document.getElementById('supportModal').classList.remove('hidden');
+      // Focus on the first input field
+      setTimeout(() => {
+          document.getElementById('subject').focus();
+      }, 100);
+  }
+
+  function closeSupportModal() {
+      document.getElementById('supportModal').classList.add('hidden');
+      // Reset form
+      document.getElementById('supportForm').reset();
+  }
+
+  function toggleNotificationDropdown() {
+    var dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('hidden');
+    dropdown.classList.toggle('opacity-0');
+    dropdown.classList.toggle('opacity-100');
+  }
+
+  function toggleProfileDropdown() {
+    var dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('hidden');
+    dropdown.classList.toggle('opacity-0');
+    dropdown.classList.toggle('opacity-100');
+  }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('supportModal');
+      modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+              closeSupportModal();
+          }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+              closeSupportModal();
+          }
+      });
+
+      // Close profile dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+          var wrapper = document.getElementById('profileDropdownWrapper');
+          var dropdown = document.getElementById('profileDropdown');
+          if (wrapper && dropdown && !wrapper.contains(e.target) && !dropdown.classList.contains('hidden')) {
+              dropdown.classList.add('hidden', 'opacity-0');
+              dropdown.classList.remove('opacity-100');
+          }
+      });
+  });
+</script>

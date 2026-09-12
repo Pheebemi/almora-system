@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Lake Authentication {% endblock %}
+
+{% block content %}
+<main>
+    <!-- Main Content -->
+    <div class="flex flex-col w-full  overflow-hidden relative min-h-screen radial-gradient items-center justify-center g-0 px-4">
+      
+        <div class="justify-center items-center w-full card lg:flex max-w-md ">
+            <div class=" w-full card-body">
+                    <a href="" class="py-4 block"><img src="{% static 'assets/images/logos/almora.jpg' %}" width="60px" height="60px" alt="" class="mx-auto"/></a>
+                    <p class="mb-4 text-gray-500 text-sm text-center">{% block header %}{% endblock %}</p>
+                <!-- form -->
+                <form method="POST">
+                    {% csrf_token %}
+                    <!-- username -->
+                    {% block layout %}
+                    
+                    
+                    {% endblock %}
+                
+                </form>
+            </div>
+        </div>
+    
+</div>
+<!--end of project-->
+</main>
+
+
+
+{% endblock %}

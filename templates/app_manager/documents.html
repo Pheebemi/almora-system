@@ -1,0 +1,146 @@
+{% extends 'app_manager/base.html' %}
+
+{% block title %}Document Verification{% endblock %}
+{% block page_title %}Document Verification Center{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+    <!-- Filter Tabs -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex items-center space-x-2">
+            <a href="?doc_status=pending"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition
+               {% if doc_status == 'pending' %}bg-yellow-500 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+               <i class="fas fa-clock mr-1"></i>Pending
+            </a>
+            <a href="?doc_status=rejected"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition
+               {% if doc_status == 'rejected' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+               <i class="fas fa-times-circle mr-1"></i>Rejected
+            </a>
+            <a href="?doc_status=all"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition
+               {% if doc_status == 'all' or not doc_status %}bg-indigo-500 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+               <i class="fas fa-list mr-1"></i>All
+            </a>
+            <span class="ml-auto text-sm text-gray-500">{{ page_obj.paginator.count }} record{{ page_obj.paginator.count|pluralize }}</span>
+        </div>
+    </div>
+
+    <!-- Document Cards -->
+    {% if page_obj.object_list %}
+    <div class="space-y-4">
+        {% for form in page_obj %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- Applicant Header -->
+            <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span class="text-sm font-bold text-indigo-600">
+                            {{ form.applicant.user.first_name|first|upper }}{{ form.applicant.user.last_name|first|upper }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">{{ form.applicant.user.get_full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ form.applicant.programs.name|default:"No program" }} · {{ form.applicant.user.email }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'accounts:app_manager_applicant_detail' form.applicant.id %}"
+                   class="text-xs text-indigo-600 hover:underline">
+                   <i class="fas fa-external-link-alt mr-1"></i>Full Profile
+                </a>
+            </div>
+
+            <!-- Documents Grid -->
+            <div class="divide-y divide-gray-100">
+                {% with docs_list=form %}
+                {% for doc_field, doc_label, doc_file, doc_status_val, doc_comment in doc_fields_data %}
+                {% endfor %}
+                {% endwith %}
+
+                <!-- WAEC Result -->
+                {% include 'app_manager/partials/doc_row.html' with form=form field='waec_result' label='WAEC Result' file=form.waec_result status=form.waec_result_status comment=form.waec_result_comment %}
+                <!-- JAMB Slip -->
+                {% include 'app_manager/partials/doc_row.html' with form=form field='jamb_result_slip' label='JAMB Result Slip' file=form.jamb_result_slip status=form.jamb_result_slip_status comment=form.jamb_result_slip_comment %}
+                <!-- Passport -->
+                {% include 'app_manager/partials/doc_row.html' with form=form field='passport_photo' label='Passport Photo' file=form.passport_photo status=form.passport_photo_status comment=form.passport_photo_comment %}
+                <!-- Birth Certificate -->
+                {% include 'app_manager/partials/doc_row.html' with form=form field='birth_certificate' label='Birth Certificate' file=form.birth_certificate status=form.birth_certificate_status comment=form.birth_certificate_comment %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&doc_status={{ doc_status }}" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        <span class="px-4 py-2 text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&doc_status={{ doc_status }}" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 py-16 text-center text-gray-400">
+        <i class="fas fa-check-double text-5xl mb-4 text-green-300"></i>
+        <h3 class="text-lg font-semibold text-gray-600 mb-1">All clear!</h3>
+        <p class="text-sm">No documents with this status found</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Reject Document</h3>
+        <p class="text-sm text-gray-500 mb-4">Please provide a reason for rejection. The applicant will be notified.</p>
+
+        <form method="POST" id="rejectForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <input type="hidden" name="form_id" id="rejectFormId">
+            <input type="hidden" name="doc_field" id="rejectDocField">
+
+            <textarea name="comment" rows="4" required
+                placeholder="Enter reason for rejection..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-red-500 resize-none mb-4"></textarea>
+
+            <div class="flex space-x-3">
+                <button type="button" onclick="closeRejectModal()" class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700">
+                    <i class="fas fa-times mr-1"></i>Reject Document
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openRejectModal(formId, docField) {
+        document.getElementById('rejectFormId').value = formId;
+        document.getElementById('rejectDocField').value = docField;
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRejectModal();
+    });
+</script>
+{% endblock %}

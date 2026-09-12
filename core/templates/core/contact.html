@@ -1,0 +1,337 @@
+{% extends 'layout/home_layout.html' %}
+{% load static %}
+
+{% block title %}Contact Us - Almora Polytechnic Pantisawa{% endblock %}
+
+{% block layout %}
+<!-- Hero Section -->
+<section class="relative py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                Get in
+                <span class="text-blue-600 block">Touch</span>
+            </h1>
+            <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
+                We're here to help and answer any questions you might have. We look forward to hearing from you.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#contact-form" class="btn-primary">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Message
+                </a>
+                <a href="#contact-info" class="btn-secondary">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Contact Info
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Contact Cards -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Phone Contact -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-phone text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Call Us</h3>
+                <p class="text-gray-600 mb-4">Speak directly with our team</p>
+                <a href="tel:+2348012345678" class="text-blue-600 font-semibold text-lg hover:text-blue-700">
+                    +234 801 234 5678
+                </a>
+                <p class="text-sm text-gray-500 mt-2">Mon-Fri: 8:00 AM - 6:00 PM</p>
+            </div>
+
+            <!-- Email Contact -->
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div class="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-envelope text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Email Us</h3>
+                <p class="text-gray-600 mb-4">Send us a detailed message</p>
+                <a href="mailto:info@almorapoly.edu.ng" class="text-green-600 font-semibold text-lg hover:text-green-700">
+                    info@almorapoly.edu.ng
+                </a>
+                <p class="text-sm text-gray-500 mt-2">We reply within 24 hours</p>
+            </div>
+
+            <!-- Location Contact -->
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div class="bg-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-map-marker-alt text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Visit Us</h3>
+                <p class="text-gray-600 mb-4">Come see our campus</p>
+                <p class="text-purple-600 font-semibold text-lg">
+                    Pantisawa
+                </p>
+                <p class="text-sm text-gray-500 mt-2">Nigeria</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form Section -->
+<section id="contact-form" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Send Us a Message</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Fill out the form below and we'll get back to you as soon as possible. We're here to help with any questions about admissions, programs, or general inquiries.
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Name and Email Row -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user text-blue-600 mr-2"></i>Full Name
+                            </label>
+                            <input type="text" id="name" name="name" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                                   placeholder="Enter your full name" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-envelope text-green-600 mr-2"></i>Email Address
+                            </label>
+                            <input type="email" id="email" name="email" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                                   placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <!-- Phone and Subject Row -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-phone text-purple-600 mr-2"></i>Phone Number
+                            </label>
+                            <input type="tel" id="phone" name="phone" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                                   placeholder="Enter your phone number">
+                        </div>
+                        <div>
+                            <label for="subject" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tag text-orange-600 mr-2"></i>Subject
+                            </label>
+                            <select id="subject" name="subject" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                <option value="">Select a subject</option>
+                                <option value="admissions">Admissions Inquiry</option>
+                                <option value="programs">Program Information</option>
+                                <option value="fees">Fees & Payment</option>
+                                <option value="campus">Campus Life</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label for="message" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-comment text-red-600 mr-2"></i>Message
+                        </label>
+                        <textarea id="message" name="message" rows="6" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                                  placeholder="Tell us more about your inquiry..." required></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center pt-4">
+                        <button type="submit" class="btn-primary text-lg px-12 py-4">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information Section -->
+<section id="contact-info" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Contact Information</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Multiple ways to reach us. Choose the method that works best for you.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Left Column - Detailed Info -->
+                <div class="space-y-8">
+                    <!-- Address -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-map-marker-alt text-xl text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Campus Address</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    Almora Polytechnic<br>
+                                    Pantisawa<br>
+                                    Nigeria
+                                </p>
+                                <a href="#" class="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block">
+                                    Get Directions <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone Numbers -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-phone text-xl text-green-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Phone Numbers</h3>
+                                <div class="space-y-2">
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">Main Office:</span><br>
+                                        <a href="tel:+2348012345678" class="text-green-600 hover:text-green-700">+234 801 234 5678</a>
+                                    </p>
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">Admissions:</span><br>
+                                        <a href="tel:+2348012345679" class="text-green-600 hover:text-green-700">+234 801 234 5679</a>
+                                    </p>
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">Student Affairs:</span><br>
+                                        <a href="tel:+2348012345680" class="text-green-600 hover:text-green-700">+234 801 234 5680</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Addresses -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-xl text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Email Addresses</h3>
+                                <div class="space-y-2">
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">General Inquiries:</span><br>
+                                        <a href="mailto:info@almorapoly.edu.ng" class="text-purple-600 hover:text-purple-700">info@almorapoly.edu.ng</a>
+                                    </p>
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">Admissions:</span><br>
+                                        <a href="mailto:admissions@almorapoly.edu.ng" class="text-purple-600 hover:text-purple-700">admissions@almorapoly.edu.ng</a>
+                                    </p>
+                                    <p class="text-gray-600">
+                                        <span class="font-medium">Student Support:</span><br>
+                                        <a href="mailto:support@almorapoly.edu.ng" class="text-purple-600 hover:text-purple-700">support@almorapoly.edu.ng</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Map Placeholder -->
+                <div class="bg-gray-100 rounded-2xl p-8 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-map text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Interactive Map</h3>
+                        <p class="text-gray-600 mb-4">
+                            View our campus location and get directions
+                        </p>
+                        <button class="btn-secondary">
+                            <i class="fas fa-map-marked-alt mr-2"></i>
+                            Open Map
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+                <p class="text-lg text-gray-600">
+                    Quick answers to common questions about contacting us
+                </p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">What are your office hours?</h3>
+                    <p class="text-gray-600">Our main office is open Monday through Friday from 8:00 AM to 6:00 PM. We're also available by appointment on weekends.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">How quickly do you respond to emails?</h3>
+                    <p class="text-gray-600">We typically respond to all emails within 24 hours during business days. For urgent matters, please call us directly.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Can I schedule a campus tour?</h3>
+                    <p class="text-gray-600">Absolutely! We'd love to show you around our campus. Contact our admissions office to schedule a personalized tour.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-20 bg-blue-600">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Don't wait to begin your educational journey. Contact us today and take the first step toward your future.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#contact-form" class="btn-white">
+                <i class="fas fa-paper-plane mr-2"></i>
+                Send Message Now
+            </a>
+            <a href="{% url 'core:landing_page' %}" class="btn-outline-white">
+                <i class="fas fa-home mr-2"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .btn-primary {
+        @apply inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-secondary {
+        @apply inline-block bg-white text-blue-600 border-2 border-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-white {
+        @apply inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+    .btn-outline-white {
+        @apply inline-block bg-transparent text-white border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'layout/applicant.html' %}
+{% load static %}
+
+{% block title %}Screening Form Payment{% endblock %}
+
+{% block late %}
+<div class="p-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Screening Form Payment</h1>
+        <p class="text-gray-600 mt-2">Complete payment to access your screening form</p>
+    </div>
+
+    <!-- Payment Card -->
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <!-- Amount Section -->
+            <div class="text-center mb-8">
+                <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-2">Payment Amount</h2>
+                    <p class="text-4xl font-bold text-blue-600">₦{{ amount|floatformat:2 }}</p>
+                    <p class="text-gray-600 mt-2">{{ applicant.programs.get_program_type_display }} screening form fee</p>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Make Payment</h3>
+                {% csrf_token %}
+                
+                <!-- Applicant Info -->
+                <div class="bg-white rounded-lg p-4 border mb-6">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Name:</span>
+                            <p class="font-medium">{{ applicant.user.get_full_name }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Program:</span>
+                            <p class="font-medium">{{ applicant.programs.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Button -->
+                <div class="text-center">
+                    <button onclick="initializeScreeningPayment()" 
+                            class="w-full bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Pay ₦{{ amount|floatformat:0 }} with Paystack
+                    </button>
+                    
+                    <p class="text-sm text-gray-500 mt-4">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Your payment information is secure and encrypted
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initializeScreeningPayment() {
+    // Get CSRF token
+    const csrftoken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+
+    // Make API call to initialize payment
+    fetch("{% url 'core:initiate_screening_payment' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            amount: '{{ amount }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            // Redirect to Paystack payment page
+            window.location.href = data.data.authorization_url;
+        } else {
+            alert('Payment initialization failed: ' + (data.error || 'Please try again.'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while initializing payment. Please try again.');
+    });
+}
+</script>
+{% endblock %}

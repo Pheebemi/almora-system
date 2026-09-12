@@ -1,0 +1,123 @@
+{% extends 'layout/staff_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Staff Profile{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <!-- Main Content -->
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Home /</span> Profile</h1>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Profile Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex flex-col items-center">
+                        <div class="relative">
+                            {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile Picture" 
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-blue-500">
+                            {% else %}
+                            <div class="w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center border-4 border-blue-500">
+                                <span class="text-4xl text-blue-500">{{ user.first_name|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <h2 class="mt-4 text-xl font-semibold">{{ user.get_full_name }}</h2>
+                        <p class="text-gray-600">{{ profile.staff_id }}</p>
+                        <p class="text-sm text-gray-500">{{ profile.get_staff_type_display }}</p>
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600">Department</span>
+                            <span class="font-semibold">{{ profile.department.name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600">Faculty</span>
+                            <span class="font-semibold">{{ profile.faculty.name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Role</span>
+                            <span class="font-semibold">{% if profile.is_head_of_department %}HOD{% else %}Staff{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Personal Information</h3>
+                        <a href="{% url 'accounts:edit_staff_profile' %}" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Edit Profile
+                        </a>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Full Name</label>
+                            <p class="text-gray-800">{{ user.get_full_name }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Email</label>
+                            <p class="text-gray-800">{{ user.email }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Phone Number</label>
+                            <p class="text-gray-800">{{ user.phone_number|default:"Not provided" }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Staff ID</label>
+                            <p class="text-gray-800">{{ profile.staff_id }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Date Employed</label>
+                            <p class="text-gray-800">{{ profile.date_employed|date:"F d, Y"|default:"Not provided" }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Qualification</label>
+                            <p class="text-gray-800">{{ profile.qualification }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-4">Department Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Faculty</label>
+                                <p class="text-gray-800">{{ profile.faculty.name }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Department</label>
+                                <p class="text-gray-800">{{ profile.department.name }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Staff Type</label>
+                                <p class="text-gray-800">{{ profile.get_staff_type_display }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Position</label>
+                                <p class="text-gray-800">{% if profile.is_head_of_department %}Head of Department{% else %}Staff Member{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %} 

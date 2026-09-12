@@ -1,0 +1,152 @@
+{% load static %}
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <!-- Logo Section -->
+            <div class="flex items-center gap-3">
+                <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Almora Polytechnic Logo" class="h-12 w-12 rounded-full">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Almora Polytechnic</h1>
+                    <p class="text-xs text-gray-600">Pantisawa</p>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'core:landing_page' %}" class="nav-link active">Home</a>
+                <a href="{% url 'core:about_page' %}" class="nav-link">About</a>
+                <a href="{% url 'core:programs_page' %}" class="nav-link">Programs</a>
+                <a href="{% url 'core:contact_page' %}" class="nav-link">Contact</a>
+            </div>
+
+            <!-- Auth Buttons -->
+            <div class="hidden md:flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:student_dashboard' %}" class="btn-primary">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'student_login' %}" class="btn-secondary">Login</a>
+                    <a href="{% url 'core:apply_page' %}" class="btn-primary">Apply Now</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button type="button" class="mobile-menu-button p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-colors duration-200">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu hidden md:hidden bg-white border-t border-gray-200 shadow-lg">
+        <div class="px-4 py-6">
+            <!-- Navigation Links -->
+            <div class="space-y-1 mb-6">
+                <a href="{% url 'core:landing_page' %}" class="mobile-nav-link">
+                    <i class="fas fa-home w-6 text-blue-600"></i>
+                    <span class="text-lg">Home</span>
+                </a>
+                <a href="{% url 'core:about_page' %}" class="mobile-nav-link">
+                    <i class="fas fa-info-circle w-6 text-green-600"></i>
+                    <span class="text-lg">About</span>
+                </a>
+                <a href="{% url 'core:programs_page' %}" class="mobile-nav-link">
+                    <i class="fas fa-graduation-cap w-6 text-purple-600"></i>
+                    <span class="text-lg">Programs</span>
+                </a>
+                <a href="{% url 'core:contact_page' %}" class="mobile-nav-link">
+                    <i class="fas fa-envelope w-6 text-red-600"></i>
+                    <span class="text-lg">Contact</span>
+                </a>
+            </div>
+            
+            <!-- Divider -->
+            <div class="border-t border-gray-200 my-6"></div>
+            
+            <!-- Auth Section -->
+            <div class="space-y-3">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:student_dashboard' %}" class="mobile-auth-link primary">
+                        <i class="fas fa-tachometer-alt w-6"></i>
+                        <span class="text-lg">Dashboard</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'student_login' %}" class="mobile-auth-link secondary">
+                        <i class="fas fa-sign-in-alt w-6"></i>
+                        <span class="text-lg">Login</span>
+                    </a>
+                    <a href="{% url 'core:apply_page' %}" class="mobile-auth-link primary">
+                        <i class="fas fa-paper-plane w-6"></i>
+                        <span class="text-lg">Apply Now</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .nav-link {
+        color: #4b5563;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+    .nav-link:hover { color: #2563eb; }
+    .nav-link.active { color: #2563eb; font-weight: 600; }
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: #2563eb;
+        color: #fff;
+        border-radius: 0.625rem;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        color: #2563eb;
+        border: 1px solid #2563eb;
+        border-radius: 0.625rem;
+        transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: #eff6ff; }
+    .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #374151;
+        border-radius: 0.625rem;
+        transition: all 0.2s;
+        width: 100%;
+    }
+    .mobile-nav-link:hover { color: #2563eb; background: #eff6ff; }
+    .mobile-auth-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 0.625rem;
+        transition: all 0.2s;
+        width: 100%;
+    }
+    .mobile-auth-link.primary { background: #2563eb; color: #fff; }
+    .mobile-auth-link.primary:hover { background: #1d4ed8; }
+    .mobile-auth-link.secondary { border: 1px solid #2563eb; color: #2563eb; }
+    .mobile-auth-link.secondary:hover { background: #eff6ff; }
+</style>
+
+<script>
+    // Mobile menu toggle
+    document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+        document.querySelector('.mobile-menu').classList.toggle('hidden');
+    });
+</script>

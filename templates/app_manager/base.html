@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Application Manager{% endblock %} - Almora Polytechnic Pantisawa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar-link { transition: all 0.2s ease; }
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255,255,255,0.15);
+            border-left: 3px solid #fff;
+        }
+        #sidebar { transition: transform 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col flex-shrink-0">
+            <!-- Logo -->
+            <div class="px-6 py-5 border-b border-indigo-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-shield text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">App Manager</p>
+                        <p class="text-indigo-300 text-xs">{{ request.user.get_full_name }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <a href="{% url 'accounts:app_manager_dashboard' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium {% if request.resolver_match.url_name == 'app_manager_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="{% url 'accounts:app_manager_applicants_list' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium {% if 'app_manager_applicants' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Applicants</span>
+                    <span class="ml-auto bg-indigo-600 text-xs px-2 py-0.5 rounded-full">{{ total_applicants_count|default:'' }}</span>
+                </a>
+
+                <a href="{% url 'accounts:app_manager_documents' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium {% if request.resolver_match.url_name == 'app_manager_documents' %}active{% endif %}">
+                    <i class="fas fa-file-check w-5"></i>
+                    <span>Document Verification</span>
+                </a>
+
+                <a href="{% url 'accounts:app_manager_merit_list' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium {% if request.resolver_match.url_name == 'app_manager_merit_list' %}active{% endif %}">
+                    <i class="fas fa-trophy w-5"></i>
+                    <span>Merit List</span>
+                </a>
+
+                <a href="{% url 'accounts:app_manager_communicate' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium {% if request.resolver_match.url_name == 'app_manager_communicate' %}active{% endif %}">
+                    <i class="fas fa-paper-plane w-5"></i>
+                    <span>Communication</span>
+                </a>
+            </nav>
+
+            <!-- Footer -->
+            <div class="px-3 py-4 border-t border-indigo-700">
+                <a href="{% url 'accounts:logout' %}"
+                   class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-red-300 hover:text-red-200">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')" class="lg:hidden text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-600"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-sm font-medium text-gray-800">{{ request.user.get_full_name }}</p>
+                        <p class="text-xs text-gray-500">Application Manager</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="px-6 pt-4 space-y-2">
+                {% for message in messages %}
+                <div class="flex items-center p-4 rounded-lg text-sm font-medium
+                    {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
+                    {% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+                    {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

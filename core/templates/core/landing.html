@@ -1,0 +1,222 @@
+{% extends 'layout/home_layout.html' %}
+{% load static %}
+
+{% block layout %}
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="flex flex-col items-center">
+        <div class="relative">
+            <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-600">
+                <img src="{% static 'assets/images/logos/almora.jpg' %}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12" alt="Almora Polytechnic Pantisawa Logo">
+            </div>
+        </div>
+        <p class="mt-4 text-gray-600">Loading Almora Polytechnic Pantisawa...</p>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="pt-32 pb-20 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <p class="text-sm font-medium text-blue-600 mb-3">Admissions open for the new session</p>
+                <h1 class="text-4xl lg:text-5xl font-semibold tracking-tight leading-[1.1] text-gray-900 mb-6">
+                    Shape your future at
+                    <span class="text-blue-600">Almora Polytechnic Pantisawa</span>
+                </h1>
+                <p class="text-lg text-gray-500 leading-relaxed max-w-lg mb-8">
+                    Join a community of innovators, leaders, and changemakers. Experience hands-on, career-focused education that prepares you for the world of work.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'core:apply_page' %}" class="btn-primary">Apply Now</a>
+                    <a href="{% url 'core:contact_page' %}" class="btn-secondary">Get in Touch</a>
+                </div>
+            </div>
+            <div>
+                <img src="{% static 'assets/illustrations/graduation.svg' %}" alt="Graduation illustration" class="w-full max-w-md mx-auto">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="py-14 border-y border-gray-200 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-3xl font-semibold text-blue-600 mb-1 count" data-target="30">0</div>
+                <div class="text-sm text-gray-500">Years of Excellence</div>
+            </div>
+            <div>
+                <div class="text-3xl font-semibold text-blue-600 mb-1 count" data-target="200">0</div>
+                <div class="text-sm text-gray-500">Expert Faculty</div>
+            </div>
+            <div>
+                <div class="text-3xl font-semibold text-blue-600 mb-1 count" data-target="50">0</div>
+                <div class="text-sm text-gray-500">Programs</div>
+            </div>
+            <div>
+                <div class="text-3xl font-semibold text-blue-600 mb-1 count" data-target="95">0</div>
+                <div class="text-sm text-gray-500">Graduate Employment</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Section -->
+<section class="py-20 md:py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="order-2 lg:order-1">
+                <img src="{% static 'assets/illustrations/education.svg' %}" alt="Education illustration" class="w-full max-w-sm mx-auto">
+            </div>
+            <div class="order-1 lg:order-2">
+                <p class="text-sm font-medium text-blue-600 mb-3">Why Almora Polytechnic</p>
+                <h2 class="text-3xl font-semibold tracking-tight text-gray-900 mb-4">Built for real learning</h2>
+                <p class="text-gray-500 leading-relaxed mb-6">
+                    We combine experienced faculty, a modern curriculum, and a genuinely global outlook so every student graduates ready for the real world.
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">Experienced, dedicated faculty across every department</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">A curriculum that keeps pace with industry and technology</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">A global outlook through partnerships and exchange opportunities</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Outcomes Section -->
+<section class="py-20 md:py-24 border-t border-gray-200 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <p class="text-sm font-medium text-blue-600 mb-3">Life on campus</p>
+                <h2 class="text-3xl font-semibold tracking-tight text-gray-900 mb-4">A campus built for outcomes</h2>
+                <p class="text-gray-500 leading-relaxed mb-6">
+                    From modern laboratories to a dedicated careers office, everything on campus is designed around one goal — your success after graduation.
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">Modern laboratories and technology-enabled classrooms</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">Career counselling, internships and job placement support</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                        <span class="text-gray-700">A vibrant, diverse student community and student organizations</span>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <img src="{% static 'assets/illustrations/career-development.svg' %}" alt="Career development illustration" class="w-full max-w-sm mx-auto">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Programs Section -->
+<section class="py-20 md:py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <p class="text-sm font-medium text-blue-600 mb-3">Academics</p>
+            <h2 class="text-3xl font-semibold tracking-tight text-gray-900 mb-4">Our Programs</h2>
+            <p class="text-gray-500 leading-relaxed">Discover your path with our diverse range of academic programs.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for faculty in faculties %}
+            <div class="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <img src="{{ faculty.faculty_img }}" alt="{{ faculty.name }}" class="object-cover h-40 w-full">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ faculty.name }}</h3>
+                    <p class="text-sm text-gray-500 mb-4">{{ faculty.description|truncatechars:100 }}.</p>
+                    <a href="#" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Learn more →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-20 md:py-24 border-t border-gray-200 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-semibold tracking-tight text-gray-900 mb-4">Ready to begin your journey?</h2>
+                <p class="text-gray-500 leading-relaxed mb-8">
+                    Join thousands of successful graduates who chose Almora Polytechnic Pantisawa for their education. Take the first step towards your future today.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'core:apply_page' %}" class="btn-primary">Apply Now</a>
+                    <a href="{% url 'core:contact_page' %}" class="btn-secondary">Get in Touch</a>
+                </div>
+            </div>
+            <div>
+                <img src="{% static 'assets/illustrations/celebration.svg' %}" alt="Celebration illustration" class="w-full max-w-sm mx-auto">
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".count");
+        const options = { threshold: 0.5 };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = +counter.getAttribute("data-target");
+                    const speed = 50;
+
+                    const updateCount = () => {
+                        const current = +counter.innerText;
+                        const increment = Math.ceil(target / speed);
+
+                        if (current < target) {
+                            counter.innerText = current + increment;
+                            setTimeout(updateCount, 20);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+
+                    updateCount();
+                    observer.unobserve(counter);
+                }
+            });
+        }, options);
+
+        counters.forEach((counter) => observer.observe(counter));
+
+        window.addEventListener('load', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 500);
+        });
+    });
+</script>
+
+<style>
+    html { scroll-behavior: smooth; }
+    #loading-overlay { transition: opacity 0.5s ease-out; }
+</style>
+{% endblock %}

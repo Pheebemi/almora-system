@@ -1,0 +1,196 @@
+{% extends 'layout/applicant.html' %}
+{% load static %}
+
+{% block title %}Processing Payment{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Home /</span> Processing Payment</h1>
+        </div>
+
+        <!-- Payment Processing Card -->
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8 text-center text-white">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-credit-card text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold mb-2">Complete Payment</h2>
+                    <p class="text-green-100 text-lg">Secure payment via Paystack</p>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="p-8">
+                    <div class="space-y-6">
+                        <!-- Payment Summary -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Payment Summary</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Description:</span>
+                                    <span class="font-medium">Screening Form Access</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Amount:</span>
+                                    <span class="text-2xl font-bold text-green-600">₦{{ payment.amount|floatformat:2 }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Reference:</span>
+                                    <span class="font-mono text-sm">{{ payment.reference }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paystack Integration -->
+                        <div class="bg-white border rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Method</h3>
+                            <div class="text-center">
+                                <div class="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-credit-card text-white text-2xl"></i>
+                                </div>
+                                <p class="text-blue-700 mb-4">Payment Details:</p>
+                                <div class="text-sm text-gray-600 mb-4 space-y-1">
+                                    <p>Public Key: {{ paystack_public_key|slice:":20" }}...</p>
+                                    <p>Email: {{ payment_data.email }}</p>
+                                    <p>Amount: ₦{{ payment_data.amount|floatformat:2 }}</p>
+                                    <p>Reference: {{ payment_data.reference }}</p>
+                                </div>
+                                <p class="text-gray-700 mb-4">Click the button below to proceed with payment</p>
+                                
+                                <button id="paystack-button" 
+                                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 mx-auto">
+                                    <i class="fas fa-lock"></i>
+                                    <span>Pay Securely with Paystack</span>
+                                </button>
+                                
+                                <!-- Test button for debugging -->
+                                <button onclick="testPaystack()" 
+                                        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                                    Test Paystack
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Payment Instructions -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <h4 class="font-semibold text-blue-800 mb-3">Payment Instructions:</h4>
+                            <ol class="list-decimal list-inside space-y-2 text-sm text-blue-700">
+                                <li>Click the "Pay Securely with Paystack" button above</li>
+                                <li>You'll be redirected to Paystack's secure payment page</li>
+                                <li>Choose your preferred payment method (Card, Bank Transfer, etc.)</li>
+                                <li>Complete the payment process</li>
+                                <li>You'll be redirected back to complete your screening form</li>
+                            </ol>
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-shield-alt text-yellow-600"></i>
+                                <div>
+                                    <p class="font-semibold text-yellow-800">Secure Payment</p>
+                                    <p class="text-sm text-yellow-700">Your payment information is encrypted and secure. We never store your card details.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-gray-50 px-6 py-4 border-t">
+                    <div class="text-center text-sm text-gray-600">
+                        <p>Having trouble? Contact support at <a href="mailto:support@almorapoly.edu.ng" class="text-blue-600 hover:underline">support@almorapoly.edu.ng</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Paystack Integration Script -->
+<script src="https://js.paystack.co/v2/inline.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paystackButton = document.getElementById('paystack-button');
+    
+    paystackButton.addEventListener('click', function() {
+        console.log('Paystack button clicked');
+        
+        // Disable button to prevent double clicks
+        paystackButton.disabled = true;
+        paystackButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        try {
+            // Check if PaystackPop is available
+            if (typeof PaystackPop === 'undefined') {
+                console.error('PaystackPop is not loaded');
+                alert('Payment gateway not loaded. Please refresh the page and try again.');
+                paystackButton.disabled = false;
+                paystackButton.innerHTML = '<i class="fas fa-lock"></i> <span>Pay Securely with Paystack</span>';
+                return;
+            }
+            
+            console.log('Initializing Paystack with:', {
+                key: '{{ paystack_public_key }}',
+                email: '{{ payment_data.email }}',
+                amount: {{ payment_data.amount }},
+                ref: '{{ payment_data.reference }}'
+            });
+            
+            // Initialize Paystack
+            const handler = PaystackPop.setup({
+                key: '{{ paystack_public_key }}',
+                email: '{{ payment_data.email }}',
+                amount: {{ payment_data.amount }},
+                currency: 'NGN',
+                ref: '{{ payment_data.reference }}',
+                callback: function(response) {
+                    console.log('Payment successful:', response);
+                    // Payment successful, redirect to verification
+                    window.location.href = '{{ request.build_absolute_uri:core:verify_screening_payment }}?reference=' + response.reference;
+                },
+                onClose: function() {
+                    console.log('Payment popup closed');
+                    // Payment cancelled, re-enable button
+                    paystackButton.disabled = false;
+                    paystackButton.innerHTML = '<i class="fas fa-lock"></i> <span>Pay Securely with Paystack</span>';
+                }
+            });
+            
+            console.log('Opening Paystack popup...');
+            handler.openIframe();
+            
+        } catch (error) {
+            console.error('Error initializing Paystack:', error);
+            alert('Error initializing payment. Please try again.');
+            paystackButton.disabled = false;
+            paystackButton.innerHTML = '<i class="fas fa-lock"></i> <span>Pay Securely with Paystack</span>';
+        }
+    });
+    
+    // Add console log to confirm script loaded
+    console.log('Paystack script loaded successfully');
+});
+
+// Test function for debugging
+function testPaystack() {
+    console.log('Testing Paystack...');
+    console.log('PaystackPop available:', typeof PaystackPop !== 'undefined');
+    console.log('Public key:', '{{ paystack_public_key }}');
+    console.log('Email:', '{{ payment_data.email }}');
+    console.log('Amount:', {{ payment_data.amount }});
+    console.log('Reference:', '{{ payment_data.reference }}');
+    
+    if (typeof PaystackPop !== 'undefined') {
+        alert('PaystackPop is loaded and available!');
+    } else {
+        alert('PaystackPop is NOT loaded. Check console for details.');
+    }
+}
+</script>
+{% endblock %}

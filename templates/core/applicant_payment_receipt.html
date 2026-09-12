@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Fee Receipt - {{ payment.reference }}</title>
+    {% load static %}
+    <style>
+        @page { size: A4; margin: 12mm 15mm; }
+        @media print {
+            html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; overflow: hidden; }
+            .no-print { display: none !important; }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #000;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 80px;
+            height: 80px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .school-tagline {
+            font-size: 14px;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        .school-address {
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* Receipt Title */
+        .receipt-title {
+            text-align: center;
+            margin: 25px 0 5px;
+        }
+        .receipt-title h2 {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .receipt-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .receipt-ref {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status-badge span {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
+        /* Billing Info Box */
+        .billing-box {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+        .billing-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .billing-row:last-child { border-bottom: none; }
+        .billing-row .b-label {
+            font-weight: bold;
+            flex-shrink: 0;
+            width: 180px;
+        }
+        .billing-row .b-value {
+            text-align: right;
+            flex: 1;
+        }
+
+        /* Payment Table */
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+        .payment-table th,
+        .payment-table td {
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            font-size: 13px;
+        }
+        .payment-table thead th {
+            background: #f5f5f5;
+            font-weight: bold;
+            text-align: left;
+        }
+        .payment-table thead th:last-child { text-align: right; }
+        .payment-table tbody td:last-child { text-align: right; }
+        .payment-table .total-row {
+            font-weight: bold;
+            font-size: 14px;
+            background: #f9f9f9;
+        }
+        .payment-table .total-row td:last-child {
+            font-size: 16px;
+        }
+
+        /* Amount in Words */
+        .amount-words {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin: 20px 0;
+            text-align: center;
+            background: #fafafa;
+            font-size: 13px;
+        }
+        .amount-words strong { margin-right: 5px; }
+        .amount-words em { font-style: italic; }
+
+        /* Note Box */
+        .note-box {
+            border-left: 4px solid #3b82f6;
+            background: #eff6ff;
+            padding: 12px 15px;
+            margin: 20px 0;
+            font-size: 12px;
+            color: #1e40af;
+        }
+
+        /* Signatures */
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 0;
+        }
+        .sig-block {
+            width: 200px;
+        }
+        .sig-block .sig-name {
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-size: 12px;
+        }
+        .sig-block .sig-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Footer */
+        .receipt-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 10px;
+            color: #888;
+        }
+
+        /* Print button */
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .print-btn:hover { background: #047857; }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            z-index: 1000;
+        }
+        .back-btn:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'core:applicant_dashboard' %}" class="back-btn no-print">← Back</a>
+    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Receipt</button>
+
+    <!-- Header -->
+    <div class="header">
+        <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo">
+        <div class="school-name">Almora Polytechnic Pantisawa</div>
+        <div class="school-tagline">...Centre of Excellence</div>
+        <div class="school-address">Pantisawa, Nigeria</div>
+    </div>
+
+    <!-- Receipt Title -->
+    <div class="receipt-title">
+        <h2>SCREENING FEE PAYMENT RECEIPT</h2>
+    </div>
+    <div class="receipt-subtitle">Admission Screening Exercise</div>
+    <div class="receipt-ref">( {{ payment.reference }} )</div>
+
+    <!-- Status Badge -->
+    <div class="status-badge">
+        {% if payment.status == 'success' %}
+        <span class="status-success">✓ Payment Verified</span>
+        {% else %}
+        <span class="status-pending">⏳ Payment Pending</span>
+        {% endif %}
+    </div>
+
+    <!-- Billing Info -->
+    <div class="billing-box">
+        <div class="billing-row">
+            <span class="b-label">Applicant Name:</span>
+            <span class="b-value">{{ payment.applicant.user.get_full_name|upper }}</span>
+        </div>
+        <div class="billing-row">
+            <span class="b-label">Email Address:</span>
+            <span class="b-value">{{ payment.applicant.user.email }}</span>
+        </div>
+        <div class="billing-row">
+            <span class="b-label">Phone Number:</span>
+            <span class="b-value">{{ payment.applicant.phone_number }}</span>
+        </div>
+        <div class="billing-row">
+            <span class="b-label">Program Type:</span>
+            <span class="b-value">{{ payment.applicant.programs.program_type|upper }}</span>
+        </div>
+        <div class="billing-row">
+            <span class="b-label">Reference No:</span>
+            <span class="b-value">{{ payment.reference }}</span>
+        </div>
+        {% if payment.paystack_reference %}
+        <div class="billing-row">
+            <span class="b-label">Paystack Reference:</span>
+            <span class="b-value">{{ payment.paystack_reference }}</span>
+        </div>
+        {% endif %}
+        <div class="billing-row">
+            <span class="b-label">Payment Date:</span>
+            <span class="b-value">{{ payment.payment_date|date:"d F, Y - h:i A" }}</span>
+        </div>
+        {% if payment.verified_at %}
+        <div class="billing-row">
+            <span class="b-label">Verified At:</span>
+            <span class="b-value">{{ payment.verified_at|date:"d F, Y - h:i A" }}</span>
+        </div>
+        {% endif %}
+        <div class="billing-row">
+            <span class="b-label">Payment Method:</span>
+            <span class="b-value">Paystack Gateway (Online)</span>
+        </div>
+    </div>
+
+    <!-- Payment Table -->
+    <table class="payment-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Admission Screening Fee - {{ payment.applicant.programs.program_type|title }}</td>
+                <td>₦{{ payment.amount|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>Total Paid</td>
+                <td>₦{{ payment.amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Amount in Words -->
+    <div class="amount-words">
+        <strong>Amount in Words:</strong> <em>{{ amount_in_words|title }} Naira Only</em>
+    </div>
+
+    <!-- Important Note -->
+    <div class="note-box">
+        <strong>Important:</strong> This receipt confirms your payment of the screening fee. Please proceed to complete your screening form to finalize your application. Keep this receipt for your records.
+    </div>
+
+    <!-- Signatures -->
+    <div class="signatures">
+        <div class="sig-block">
+            <div style="height: 30px;"></div>
+            <div class="sig-name">Verified by Paystack</div>
+            <div class="sig-title">Payment Gateway</div>
+        </div>
+        <div class="sig-block" style="text-align: right;">
+            <div style="height: 30px;"></div>
+            <div class="sig-name" style="text-align: right;">For Admissions Office</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="receipt-footer">
+        This receipt was auto-generated from Almora Polytechnic Pantisawa Admissions Portal on {{ payment.payment_date|date:"d F, Y" }}.
+        <br>For inquiries, contact: admissions@almorapoly.edu.ng
+    </div>
+</body>
+</html>

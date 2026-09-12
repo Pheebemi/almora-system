@@ -1,0 +1,45 @@
+{% extends 'layout/home_layout.html' %}
+{% load static %}
+
+{% block layout %}
+
+
+<!-- Programs Page Content -->
+<section class="py-20 bg-gray-100 mt-16"> <!-- Added mt-16 for margin-top -->
+    <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto text-center md:mb-6 lg:mb-12" data-aos="fade-up">
+            <h2 class="text-xl md:text-4xl font-bold text-gray-900 mb-4">Single Program {{program.name}}</h2>
+            <p class="text-lg text-gray-600">
+                Explore the diverse range of programs we offer at Almora Polytechnic Pantisawa.
+            </p>
+        </div>
+
+            <!-- Program 1 -->
+            <div class="bg-white p-4 rounded-lg" data-aos="fade-up" data-aos-delay="100">
+            <div class="w-full h-[40vh] md:h-[60vh] overflow-hidden">
+            <img src="{{ program.faculty_img }}" class="object-cover rounded-lg" alt="{{ program.name }}">
+            </div>
+                <h3 class="text-3xl font-bold text-gray-900 my-4">{{program.name}}</h3>
+                <p class="text-lg text-gray-600 mb-4">
+                    {{program.description }}.
+                </p>
+                
+                <div>
+                <h2 class="font-medium py-2 text-xl">Departments Under this Faculty</h2>
+                    <ul class="mt-2">
+                        {% if departments %}
+                        {% for department in departments %}
+                        <li><a href="">{{ department.name }} ({{department.short_name}})</a></li>
+                        {% endfor %}
+                        {% else %}
+                        <h2>No department under this course</h2>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}
