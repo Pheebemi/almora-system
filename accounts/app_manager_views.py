@@ -13,6 +13,7 @@ from django.core.paginator import Paginator
 from core.models import Applicant, ScreeningForm, ScreeningPayment
 from dashboard.models import Notification
 from .models import ApplicationActivity, ApplicationNote, User
+from .utils import resolve_login_username
 from datetime import datetime, timedelta
 import json
 
@@ -282,7 +283,7 @@ def app_manager_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=resolve_login_username(username), password=password)
 
         if user is not None and user.user_type == 'application_manager':
             login(request, user)

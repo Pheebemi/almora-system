@@ -11,6 +11,7 @@ from .models import (
     Course, CourseOffering, CourseRegistration, StudentProfile,
     AcademicSession, Level, Department, Faculty
 )
+from .utils import resolve_login_username
 
 
 def is_exam_officer(user):
@@ -29,7 +30,7 @@ def exam_officer_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=resolve_login_username(username), password=password)
         if user is not None:
             if user.is_verified:
                 if user.user_type == 'exam_officer':

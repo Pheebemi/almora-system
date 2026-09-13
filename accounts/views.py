@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Attendance, CourseRegistration, StudentProfile
+from .utils import resolve_login_username
 
 # Create your views here.
 
@@ -97,7 +98,7 @@ def staff_login(request):
             username = request.POST.get('username')
             password = request.POST.get('password')
 
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=resolve_login_username(username), password=password)
         if user is not None:
             if user.is_verified:
                 if user.user_type in ('staff', 'admin'):

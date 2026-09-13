@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from accounts.models import Faculty, Department, User, StudentProfile, AcademicRecord
+from accounts.utils import resolve_login_username
 from django.contrib import messages
 from .models import ContactSubmission
 from django.contrib.auth import get_user_model
@@ -107,8 +108,8 @@ def applicant_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        user = authenticate(request, username=username, password=password)
-        
+        user = authenticate(request, username=resolve_login_username(username), password=password)
+
         if user is not None:
             if user.user_type == 'applicant':
                 login(request, user)
