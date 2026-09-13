@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     # API apps
     'rest_framework',
     'corsheaders',
+    'storages',
 ]
 
 TAILWIND_APP_NAME = os.getenv('TAILWIND_APP_NAME', 'theme')
@@ -199,6 +200,39 @@ MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 
 # WhiteNoise: compress and cache static files in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Cloudflare R2 (S3-compatible) for user-uploaded media.
+# Vercel's filesystem is read-only, so local FileSystemStorage can't be used
+# in production. Falls back to local media storage when unset, for local dev.
+R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID', '')
+R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID', '')
+R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY', '')
+R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', '')
+R2_PUBLIC_URL = os.getenv('R2_PUBLIC_URL', '')  # e.g. https://media.almora.edu.ng or the r2.dev URL
+
+if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME:
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3.S3Storage',
+            'OPTIONS': {
+                'access_key': R2_ACCESS_KEY_ID,
+                'secret_key': R2_SECRET_ACCESS_KEY,
+                'bucket_name': R2_BUCKET_NAME,
+                'endpoint_url': f'https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com',
+                'custom_domain': R2_PUBLIC_URL.replace('https://', '').replace('http://', '') or None,
+                'default_acl': None,
+                'addressing_style': 'path',
+                'signature_version': 's3v4',
+                'querystring_auth': False,
+                'file_overwrite': False,
+            },
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
+    if R2_PUBLIC_URL:
+        MEDIA_URL = R2_PUBLIC_URL.rstrip('/') + '/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

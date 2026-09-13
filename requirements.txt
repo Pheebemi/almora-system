@@ -35,3 +35,5 @@ urllib3==2.2.3
 django-ratelimit==4.1.0
 whitenoise==6.8.2
 psycopg2-binary==2.9.10
+django-storages==1.14.4
+boto3==1.35.68
