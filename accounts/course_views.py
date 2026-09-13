@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Course, CourseOffering, CourseRegistration, Department, StudentProfile, PaymentTransaction, AcademicSession, Level
 
@@ -128,6 +129,17 @@ def manage_courses(request):
             courses.append({'course': c, 'level': offering.level, 'offering': offering, 'department': offering.department})
 
     total_credits = sum(row['course'].credits for row in courses)
+    total_courses = len(courses)
+    active_courses = sum(1 for r in courses if r['course'].is_active)
+
+    # Paginate the filtered results
+    paginator = Paginator(courses, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # Preserve the current filters when linking between pages
+    querydict = request.GET.copy()
+    querydict.pop('page', None)
+    querystring = querydict.urlencode()
 
     # Get filter options for dropdowns
     level_qs = Level.objects.all() if department is None else Level.objects.filter(course_offerings__department=department)
@@ -137,11 +149,13 @@ def manage_courses(request):
     available_departments = Department.objects.select_related('faculty').order_by('faculty__name', 'name') if is_admin else None
 
     context = {
-        'courses': courses,
+        'courses': page_obj,
+        'page_obj': page_obj,
+        'querystring': querystring,
         'department': department,
         'is_admin': is_admin,
-        'total_courses': len(courses),
-        'active_courses': sum(1 for r in courses if r['course'].is_active),
+        'total_courses': total_courses,
+        'active_courses': active_courses,
         'total_credits': total_credits,
         # Filter options
         'available_levels': available_levels,
