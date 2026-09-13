@@ -5,11 +5,13 @@ from django.db.models import Q
 from .models import Course, CourseOffering, CourseRegistration, Department, StudentProfile, PaymentTransaction, AcademicSession, Level
 
 def is_staff(user):
-    return user.user_type == 'staff'
+    return user.user_type in ('staff', 'admin')
 
 @login_required
 @user_passes_test(is_staff)
 def create_course(request):
+    is_admin = request.user.user_type == 'admin'
+
     if request.method == 'POST':
         course = Course.objects.create(
             code=request.POST.get('code'),
@@ -24,11 +26,16 @@ def create_course(request):
         selected_departments = request.POST.getlist('departments')
         selected_levels = request.POST.getlist('levels')
 
-        # Restrict to staff's programme type only
-        staff_dept = request.user.staffprofile.department
-        staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
-        allowed_dept_ids = set(Department.objects.filter(faculty__programme_type=staff_programme_type).values_list('id', flat=True))
-        allowed_level_ids = set(Level.objects.filter(programme_type=staff_programme_type).values_list('id', flat=True))
+        if is_admin:
+            # Admin can offer a course in any department/level, any programme type
+            allowed_dept_ids = set(Department.objects.values_list('id', flat=True))
+            allowed_level_ids = set(Level.objects.values_list('id', flat=True))
+        else:
+            # Staff (HOD) restricted to their own programme type only
+            staff_dept = request.user.staffprofile.department
+            staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
+            allowed_dept_ids = set(Department.objects.filter(faculty__programme_type=staff_programme_type).values_list('id', flat=True))
+            allowed_level_ids = set(Level.objects.filter(programme_type=staff_programme_type).values_list('id', flat=True))
 
         offerings_created = 0
         for dept_id in selected_departments:
@@ -55,33 +62,46 @@ def create_course(request):
             messages.warning(request, f'Course {course.code} created but no offerings specified.')
 
         return redirect('accounts:manage_courses')
-    
-    # Staff can create courses for any department in their programme type (multiple depts can offer one course)
-    staff_dept = request.user.staffprofile.department
-    staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
-    departments = Department.objects.filter(faculty__programme_type=staff_programme_type).select_related('faculty').order_by('name')
-    levels = Level.objects.filter(programme_type=staff_programme_type).order_by('order')
-    
+
+    if is_admin:
+        # Admin sees every department/level across every faculty
+        departments = Department.objects.select_related('faculty').order_by('faculty__name', 'name')
+        levels = Level.objects.order_by('programme_type', 'order')
+    else:
+        # Staff can create courses for any department in their own programme type
+        staff_dept = request.user.staffprofile.department
+        staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
+        departments = Department.objects.filter(faculty__programme_type=staff_programme_type).select_related('faculty').order_by('name')
+        levels = Level.objects.filter(programme_type=staff_programme_type).order_by('order')
+
     context = {
         'departments': departments,
         'academic_sessions': AcademicSession.objects.all().order_by('-start_year'),
-        'levels': levels
+        'levels': levels,
+        'is_admin': is_admin,
+        'layout_template': 'layout/admin_dash_layout.html' if is_admin else 'layout/staff_dash_layout.html',
     }
     return render(request, 'accounts/courses/create_course.html', context)
 
 @login_required
 @user_passes_test(is_staff)
 def manage_courses(request):
-    department = request.user.staffprofile.department
-    course_offerings = CourseOffering.objects.filter(
-        department=department
-    ).select_related('course', 'course__academic_session', 'level').order_by('course__code', 'level__order')
+    is_admin = request.user.user_type == 'admin'
+    department = None if is_admin else request.user.staffprofile.department
+
+    course_offerings = CourseOffering.objects.select_related(
+        'course', 'course__academic_session', 'level', 'department'
+    )
+    if department is not None:
+        course_offerings = course_offerings.filter(department=department)
+    course_offerings = course_offerings.order_by('course__code', 'level__order')
 
     # Read filter query params
     filter_semester = request.GET.get('semester', '')
     filter_level = request.GET.get('level', '')
     filter_session = request.GET.get('session', '')
     filter_status = request.GET.get('status', '')
+    filter_department = request.GET.get('department', '') if is_admin else ''
 
     # Apply filters to queryset
     if filter_semester:
@@ -94,41 +114,46 @@ def manage_courses(request):
         course_offerings = course_offerings.filter(course__is_active=True)
     elif filter_status == 'inactive':
         course_offerings = course_offerings.filter(course__is_active=False)
+    if filter_department:
+        course_offerings = course_offerings.filter(department__id=filter_department)
 
-    # Build flat list: each row is a (course, level) for template compatibility
+    # Build flat list: each row is a (course, level, department) for template compatibility
     courses = []
     seen = set()
     for offering in course_offerings:
         c = offering.course
-        key = (c.id, offering.level.id)
+        key = (c.id, offering.level.id, offering.department.id)
         if key not in seen:
             seen.add(key)
-            courses.append({'course': c, 'level': offering.level, 'offering': offering})
+            courses.append({'course': c, 'level': offering.level, 'offering': offering, 'department': offering.department})
 
     total_credits = sum(row['course'].credits for row in courses)
 
     # Get filter options for dropdowns
-    available_levels = Level.objects.filter(
-        course_offerings__department=department
-    ).distinct().order_by('order')
-    available_sessions = AcademicSession.objects.filter(
-        courses__offerings__department=department
-    ).distinct().order_by('-start_year')
+    level_qs = Level.objects.all() if department is None else Level.objects.filter(course_offerings__department=department)
+    available_levels = level_qs.distinct().order_by('order')
+    session_qs = AcademicSession.objects.all() if department is None else AcademicSession.objects.filter(courses__offerings__department=department)
+    available_sessions = session_qs.distinct().order_by('-start_year')
+    available_departments = Department.objects.select_related('faculty').order_by('faculty__name', 'name') if is_admin else None
 
     context = {
         'courses': courses,
         'department': department,
+        'is_admin': is_admin,
         'total_courses': len(courses),
         'active_courses': sum(1 for r in courses if r['course'].is_active),
         'total_credits': total_credits,
         # Filter options
         'available_levels': available_levels,
         'available_sessions': available_sessions,
+        'available_departments': available_departments,
         # Current filter selections (to preserve state)
         'filter_semester': filter_semester,
         'filter_level': filter_level,
         'filter_session': filter_session,
         'filter_status': filter_status,
+        'filter_department': filter_department,
+        'layout_template': 'layout/admin_dash_layout.html' if is_admin else 'layout/staff_dash_layout.html',
     }
     return render(request, 'accounts/courses/manage_courses.html', context)
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import StudentProfile, AcademicRecord, Course, CourseOffering, AcademicSession
-from .decorators import student_required, staff_required
+from accounts.models import StudentProfile, AcademicRecord, Course, CourseOffering, AcademicSession, StaffProfile, Faculty, Department
+from .decorators import student_required, staff_required, admin_required
 from datetime import datetime
 from django.contrib import messages
 from .models import SupportRequest, Notification
@@ -137,6 +137,52 @@ def staff_dashboard(request):
         'notifications': notifications,
     }
     return render(request, 'dashboard/staff-dashboard.html', context)
+
+@admin_required
+def admin_dashboard(request):
+    """School-wide dashboard for the admin role (all faculties/departments)."""
+
+    total_students = StudentProfile.objects.count()
+    active_students = StudentProfile.objects.filter(current_session__is_active=True).count()
+
+    total_staff = StaffProfile.objects.count()
+    total_departments = Department.objects.count()
+    total_faculties = Faculty.objects.count()
+
+    total_courses = Course.objects.count()
+    active_courses = Course.objects.filter(is_active=True).count()
+    total_offerings = CourseOffering.objects.count()
+
+    departments_summary = []
+    for dept in Department.objects.select_related('faculty').all():
+        departments_summary.append({
+            'department': dept,
+            'student_count': StudentProfile.objects.filter(department=dept).count(),
+            'course_count': CourseOffering.objects.filter(department=dept).values('course').distinct().count(),
+        })
+
+    recent_courses = Course.objects.select_related('academic_session').order_by('-created_at')[:5]
+
+    notifications = Notification.objects.filter(user=request.user, is_read=False)[:5]
+
+    current_session = AcademicSession.objects.filter(is_active=True).first()
+    session_name = f"{current_session.start_year}/{current_session.end_year}" if current_session else "2023/2024"
+
+    context = {
+        'session_name': session_name,
+        'total_students': total_students,
+        'active_students': active_students,
+        'total_staff': total_staff,
+        'total_departments': total_departments,
+        'total_faculties': total_faculties,
+        'total_courses': total_courses,
+        'active_courses': active_courses,
+        'total_offerings': total_offerings,
+        'departments_summary': departments_summary,
+        'recent_courses': recent_courses,
+        'notifications': notifications,
+    }
+    return render(request, 'dashboard/admin-dashboard.html', context)
 
 @login_required
 def support(request):

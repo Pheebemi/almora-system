@@ -1,0 +1,264 @@
+{% extends 'layout/admin_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden xl:ml-[270px]">
+    <!-- Main Content -->
+    <main class="h-full overflow-y-auto max-w-full pt-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Welcome Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">
+                            Welcome back, {{ user.get_full_name|default:user.username }}! 🏫
+                        </h1>
+                        <p class="text-purple-100 text-lg">
+                            School-Wide Administration • Academic Session {{ session_name }}
+                        </p>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex flex-col items-end">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <div class="text-sm text-purple-100">Role</div>
+                            <div class="font-bold text-lg">School Admin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Students -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Total Students</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                            <p class="text-sm text-gray-600">{{ active_students }} active this session</p>
+                        </div>
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Total Staff</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_staff }}</p>
+                            <p class="text-sm text-gray-600">{{ total_departments }} departments</p>
+                        </div>
+                        <div class="p-3 bg-orange-100 rounded-full">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Courses -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Total Courses</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_courses }}</p>
+                            <p class="text-sm text-gray-600">{{ active_courses }} active</p>
+                        </div>
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faculties -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Faculties</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_faculties }}</p>
+                            <p class="text-sm text-gray-600">{{ total_offerings }} course offerings</p>
+                        </div>
+                        <div class="p-3 bg-purple-100 rounded-full">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Departments Breakdown -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <a href="{% url 'accounts:create_course' %}"
+                           class="w-full flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                                <span class="font-medium text-gray-900">Create New Course</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+
+                        <a href="{% url 'accounts:manage_courses' %}"
+                           class="w-full flex items-center justify-between p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                                <span class="font-medium text-gray-900">Manage All Courses</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+
+                        <a href="/admin/"
+                           class="w-full flex items-center justify-between p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                </svg>
+                                <span class="font-medium text-gray-900">Django Admin</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Departments Breakdown -->
+                <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"></path>
+                        </svg>
+                        Departments Overview
+                    </h3>
+
+                    {% if departments_summary %}
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        {% for row in departments_summary %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-semibold text-indigo-600">{{ row.department.short_name|slice:":3" }}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">{{ row.department.name }}</h4>
+                                    <p class="text-sm text-gray-600">{{ row.department.faculty.name }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-900">{{ row.student_count }} students</p>
+                                <p class="text-xs text-gray-500">{{ row.course_count }} courses</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-gray-600">No departments yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Courses -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    Recently Added Courses (School-Wide)
+                </h3>
+
+                {% if recent_courses %}
+                <div class="space-y-3">
+                    {% for course in recent_courses %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-semibold text-blue-600">{{ course.code|slice:":2" }}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">{{ course.code }} — {{ course.title }}</h4>
+                                <p class="text-sm text-gray-600">{{ course.get_semester_display }} • {{ course.credits }} credits</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full
+                            {% if course.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ course.is_active|yesno:"Active,Inactive" }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'accounts:manage_courses' %}"
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors duration-200">
+                        View All Courses
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-600 mb-4">No courses created yet.</p>
+                    <a href="{% url 'accounts:create_course' %}"
+                       class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                        Create the First Course
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Notifications -->
+            {% if notifications %}
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5V7a2 2 0 012-2h0a2 2 0 012 2v6l5 5h-5m0 0v2a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2m0 0H7a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2v-2"></path>
+                    </svg>
+                    Recent Notifications
+                </h3>
+                <div class="space-y-3">
+                    {% for notification in notifications %}
+                    <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-medium text-gray-900">{{ notification.title }}</h4>
+                            <p class="text-sm text-gray-600">{{ notification.message }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ notification.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

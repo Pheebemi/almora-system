@@ -100,16 +100,17 @@ def staff_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             if user.is_verified:
-                if user.user_type == 'staff':
+                if user.user_type in ('staff', 'admin'):
                     login(request, user)
+                    dashboard_url = 'dashboard:admin_dashboard' if user.user_type == 'admin' else 'dashboard:staff_dashboard'
                     # Check if this is an API request
                     if request.content_type == 'application/x-www-form-urlencoded':
                         # API request - redirect to dashboard
-                        return redirect(reverse('dashboard:staff_dashboard'))
+                        return redirect(reverse(dashboard_url))
                     else:
                         # Regular form request
                         messages.info(request, f'Staff Login as {request.user.username}')
-                        return redirect(reverse('dashboard:staff_dashboard'))
+                        return redirect(reverse(dashboard_url))
                 else:
                     if request.content_type == 'application/x-www-form-urlencoded':
                         # Return JSON error for API
@@ -138,7 +139,7 @@ def logout_user(request):
     user_type = request.user.user_type if request.user.is_authenticated else 'student'
     logout(request)
     messages.info(request, 'You have been logged out successfully.')
-    if user_type == 'staff':
+    if user_type in ('staff', 'admin'):
         return redirect('staff_login')
     elif user_type == 'applicant':
         return redirect('core:applicant_login')

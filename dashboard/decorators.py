@@ -24,6 +24,28 @@ def student_required(view_func):
     return _wrapped_view
 
 
+def admin_required(view_func):
+    """
+    Decorator to allow only verified admin (school-wide) users to access a view.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.user_type == 'admin':
+                if request.user.is_verified:
+                    return view_func(request, *args, **kwargs)
+                else:
+                    messages.error(request, "Your account is not verified. Contact the admin.")
+                    return redirect('staff_login')
+            else:
+                messages.error(request, "Access denied. Admins only.")
+                return redirect('staff_login')
+        else:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('staff_login')
+    return _wrapped_view
+
+
 def staff_required(view_func):
     """
     Decorator to allow only verified staff members to access a view.

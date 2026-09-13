@@ -1,10 +1,10 @@
-{% extends 'layout/staff_dash_layout.html' %}
+{% extends layout_template|default:'layout/staff_dash_layout.html' %}
 {% load static %}
 
 {% block title %}Create Course{% endblock %}
 
 {% block layout %}
-<div class="w-full page-wrapper overflow-hidden">
+<div class="w-full page-wrapper overflow-hidden xl:ml-[270px]">
     <main class="h-full overflow-y-auto max-w-full pt-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <div class="p-6 space-y-6">
 
@@ -13,7 +13,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-bold mb-1">Create New Course</h1>
-                        <p class="text-white/90">Add a course to your department</p>
+                        <p class="text-white/90">{% if is_admin %}Add a course to any department, school-wide{% else %}Add a course to your department{% endif %}</p>
                     </div>
                     <a href="{% url 'accounts:manage_courses' %}" class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur text-white rounded-xl font-medium hover:bg-white/30 transition border border-white/30">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -87,7 +87,7 @@
                                     <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                         <input type="checkbox" name="departments" value="{{ department.id }}"
                                                class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                        <span class="text-sm">{{ department.name }}</span>
+                                        <span class="text-sm">{{ department.name }}{% if is_admin %} <span class="text-gray-400">({{ department.faculty.name }})</span>{% endif %}</span>
                                     </label>
                                     {% empty %}
                                     <p class="text-gray-500 text-sm">No departments available</p>

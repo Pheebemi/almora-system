@@ -1,10 +1,10 @@
-{% extends 'layout/staff_dash_layout.html' %}
+{% extends layout_template|default:'layout/staff_dash_layout.html' %}
 {% load static %}
 
 {% block title %}Manage Courses{% endblock %}
 
 {% block layout %}
-<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden xl:ml-[270px]">
     <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
         <div class="p-6 space-y-6">
 
@@ -14,7 +14,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 class="text-2xl md:text-3xl font-bold mb-1">Manage Courses</h1>
-                        <p class="text-white/90 text-lg">{{ department.name|default:"Department" }}</p>
+                        <p class="text-white/90 text-lg">{% if is_admin %}All Departments (School-Wide){% else %}{{ department.name|default:"Department" }}{% endif %}</p>
                     </div>
                     <a href="{% url 'accounts:create_course' %}"
                         class="inline-flex items-center px-5 py-2.5 bg-white text-emerald-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
@@ -103,7 +103,24 @@
                                     </a>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{% if is_admin %}6{% else %}5{% endif %} gap-3">
+                                {% if is_admin %}
+                                <!-- Department Filter (admin only) -->
+                                <div>
+                                    <label for="filter-department"
+                                        class="block text-xs font-medium text-gray-500 mb-1">Department</label>
+                                    <select id="filter-department" name="department"
+                                        onchange="document.getElementById('filterForm').submit()"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                                        <option value="">All Departments</option>
+                                        {% for dept in available_departments %}
+                                        {% if filter_department == dept.id|stringformat:"d" %}<option value="{{ dept.id }}"
+                                            selected>{{ dept.name }}</option>{% else %}<option value="{{ dept.id }}">{{
+                                            dept.name }}</option>{% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
                                 <!-- Semester Filter -->
                                 <div>
                                     <label for="filter-semester"
@@ -214,6 +231,11 @@
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Title</th>
+                                {% if is_admin %}
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Department</th>
+                                {% endif %}
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Session</th>
@@ -243,6 +265,11 @@
                                 <td class="px-6 py-4">
                                     <span class="text-sm text-gray-700">{{ row.course.title }}</span>
                                 </td>
+                                {% if is_admin %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {{ row.department.name }}
+                                </td>
+                                {% endif %}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {{ row.course.academic_session.name|default:"—" }}
                                 </td>
@@ -269,7 +296,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
+                                <td colspan="{% if is_admin %}9{% else %}8{% endif %}" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center text-gray-500">
                                         <svg class="w-14 h-14 text-gray-300 mb-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -278,8 +305,7 @@
                                             </path>
                                         </svg>
                                         <p class="font-medium text-gray-700 mb-1">No courses yet</p>
-                                        <p class="text-sm mb-4">Create your first course for {{
-                                            department.name|default:"your department" }}.</p>
+                                        <p class="text-sm mb-4">{% if is_admin %}Create the first course for the school.{% else %}Create your first course for {{ department.name|default:"your department" }}.{% endif %}</p>
                                         <a href="{% url 'accounts:create_course' %}"
                                             class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Admin Dashboard {% endblock %}
+
+{% block content %}
+
+<main>
+    <!--start the project-->
+    <div id="main-wrapper" class="flex">
+
+      {% include 'includes/admin-sidebar.html' %}
+
+      {% block layout %}
+      {% endblock %}
+    </div>
+    <!--end of project-->
+</main>
+
+{% endblock %}
