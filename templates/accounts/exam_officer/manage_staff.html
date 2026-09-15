@@ -100,16 +100,26 @@
                             {% endfor %}
                         </div>
 
-                        <form method="POST" action="{% url 'accounts:exam_officer_assign_staff_course' staff.id %}" class="flex flex-col sm:flex-row gap-2">
+                        <form method="POST" action="{% url 'accounts:exam_officer_assign_staff_course' staff.id %}">
                             {% csrf_token %}
-                            <select name="course_id" required class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg">
-                                <option value="">Select a course to assign...</option>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <p class="text-xs font-medium text-gray-500">Select one or more courses to assign</p>
+                                <button type="button" onclick="toggleAllCourses(this)" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                                    Select all
+                                </button>
+                            </div>
+                            <div class="max-h-44 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-0.5 mb-2">
                                 {% for course in available_courses %}
-                                <option value="{{ course.id }}">{{ course.code }} — {{ course.title }}</option>
+                                <label class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" name="course_ids" value="{{ course.id }}" class="course-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-gray-700">{{ course.code }} — {{ course.title }}</span>
+                                </label>
+                                {% empty %}
+                                <p class="text-xs text-gray-400 italic px-2 py-1">No courses available.</p>
                                 {% endfor %}
-                            </select>
+                            </div>
                             <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
-                                <i class="ti ti-plus mr-1.5"></i> Assign
+                                <i class="ti ti-plus mr-1.5"></i> Assign Selected
                             </button>
                         </form>
                     </div>
@@ -150,4 +160,14 @@
         </div>
     </main>
 </div>
+
+<script>
+function toggleAllCourses(button) {
+    const form = button.closest('form');
+    const checkboxes = form.querySelectorAll('.course-checkbox');
+    const shouldCheck = Array.from(checkboxes).some(cb => !cb.checked);
+    checkboxes.forEach(cb => { cb.checked = shouldCheck; });
+    button.textContent = shouldCheck ? 'Deselect all' : 'Select all';
+}
+</script>
 {% endblock %}

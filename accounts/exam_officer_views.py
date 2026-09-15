@@ -485,7 +485,7 @@ def manage_staff(request):
 @login_required
 @user_passes_test(is_exam_officer)
 def assign_staff_course(request, staff_id):
-    """Assign a course to a staff member so they can upload results for it."""
+    """Assign one or more courses to a staff member so they can upload results for them."""
     officer = request.user.examofficerprofile
     assigned_types = officer.assigned_programme_types
     staff = get_object_or_404(
@@ -493,18 +493,34 @@ def assign_staff_course(request, staff_id):
     )
 
     if request.method == 'POST':
-        course = get_object_or_404(
-            Course, id=request.POST.get('course_id'),
+        course_ids = request.POST.getlist('course_ids')
+        courses = Course.objects.filter(
+            id__in=course_ids,
             offerings__department__faculty__programme_type__in=assigned_types
-        )
-        assignment, created = CourseStaffAssignment.objects.get_or_create(
-            staff=staff, course=course,
-            defaults={'assigned_by': request.user}
-        )
-        if created:
-            messages.success(request, f"{staff.user.get_full_name()} assigned to {course.code}.")
+        ).distinct()
+
+        if not courses.exists():
+            messages.warning(request, "Select at least one course to assign.")
         else:
-            messages.info(request, f"{staff.user.get_full_name()} is already assigned to {course.code}.")
+            newly_assigned = []
+            already_assigned = []
+            for course in courses:
+                assignment, created = CourseStaffAssignment.objects.get_or_create(
+                    staff=staff, course=course,
+                    defaults={'assigned_by': request.user}
+                )
+                (newly_assigned if created else already_assigned).append(course.code)
+
+            if newly_assigned:
+                messages.success(
+                    request,
+                    f"{staff.user.get_full_name()} assigned to {len(newly_assigned)} course(s): {', '.join(newly_assigned)}."
+                )
+            if already_assigned:
+                messages.info(
+                    request,
+                    f"Already assigned: {', '.join(already_assigned)}."
+                )
 
     return redirect('accounts:exam_officer_manage_staff')
 
