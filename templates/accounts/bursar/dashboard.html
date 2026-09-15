@@ -1,0 +1,136 @@
+{% extends 'layout/bursar_layout.html' %}
+{% load static %}
+
+{% block title %}Bursar Dashboard{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden xl:ml-[270px]">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-700 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Welcome, {{ request.user.get_full_name }}!</h1>
+                        <p class="text-green-100 text-lg">Bursar • {{ current_session.name|default:"No active session" }}</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 text-right">
+                        <p class="text-xs text-green-100">Bursar ID</p>
+                        <p class="text-lg font-bold">{{ bursar.staff_id }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Collected -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <p class="text-sm font-medium text-gray-500">Total Collected (All Time)</p>
+                <p class="text-4xl font-bold text-gray-900 mt-1">₦{{ total_collected|floatformat:2 }}</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">School Fees</p>
+                            <p class="text-xl font-bold text-gray-900">₦{{ school_fees_total|floatformat:2 }}</p>
+                        </div>
+                        <div class="p-2.5 bg-green-100 rounded-lg">
+                            <i class="ti ti-school text-xl text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Acceptance Fees</p>
+                            <p class="text-xl font-bold text-gray-900">₦{{ acceptance_fees_total|floatformat:2 }}</p>
+                        </div>
+                        <div class="p-2.5 bg-blue-100 rounded-lg">
+                            <i class="ti ti-checkbox text-xl text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Application Fees</p>
+                            <p class="text-xl font-bold text-gray-900">₦{{ application_fees_total|floatformat:2 }}</p>
+                        </div>
+                        <div class="p-2.5 bg-purple-100 rounded-lg">
+                            <i class="ti ti-file-invoice text-xl text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Other Fees</p>
+                            <p class="text-xl font-bold text-gray-900">₦{{ other_fees_total|floatformat:2 }}</p>
+                        </div>
+                        <div class="p-2.5 bg-amber-100 rounded-lg">
+                            <i class="ti ti-coin text-xl text-amber-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending -->
+            {% if pending_payments or pending_application_fees %}
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                <i class="ti ti-clock text-xl text-amber-600"></i>
+                <p class="text-sm text-amber-800 font-medium">
+                    {{ pending_payments }} pending student payment(s) and {{ pending_application_fees }} pending application fee(s) awaiting confirmation.
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recent Payments -->
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800">Recent Payments</h2>
+                        <a href="{% url 'accounts:bursar_payments' %}" class="text-sm text-green-600 hover:text-green-800 font-medium">View all</a>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        {% for payment in recent_payments %}
+                        <div class="px-6 py-3 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ payment.student.user.get_full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ payment.get_payment_type_display }} • {{ payment.session }}</p>
+                            </div>
+                            <span class="text-sm font-semibold text-green-700">₦{{ payment.amount|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="px-6 py-8 text-center text-sm text-gray-400">No payments yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Application Fees -->
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800">Recent Application Fees</h2>
+                        <a href="{% url 'accounts:bursar_application_fees' %}" class="text-sm text-green-600 hover:text-green-800 font-medium">View all</a>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        {% for payment in recent_application_fees %}
+                        <div class="px-6 py-3 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ payment.applicant.user.get_full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ payment.payment_date|date:"d M Y" }}</p>
+                            </div>
+                            <span class="text-sm font-semibold text-purple-700">₦{{ payment.amount|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="px-6 py-8 text-center text-sm text-gray-400">No application fees yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

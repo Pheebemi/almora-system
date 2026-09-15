@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, course_views, app_manager_views, exam_officer_views
+from . import views, course_views, app_manager_views, exam_officer_views, bursar_views
 
 
 app_name = 'accounts'
@@ -49,4 +49,11 @@ urlpatterns = [
     # Staff Result Upload URLs (courses assigned by an exam officer)
     path('result-courses/', course_views.staff_result_courses, name='staff_result_courses'),
     path('result-courses/<int:course_id>/', course_views.staff_upload_result, name='staff_upload_result'),
+
+    # Bursar URLs
+    path('bursar/dashboard/', bursar_views.bursar_dashboard, name='bursar_dashboard'),
+    path('bursar/payments/', bursar_views.bursar_payments, name='bursar_payments'),
+    path('bursar/application-fees/', bursar_views.bursar_application_fees, name='bursar_application_fees'),
+    path('bursar/fee-structure/', bursar_views.bursar_fee_structure, name='bursar_fee_structure'),
+    path('bursar/fee-structure/<int:fee_id>/delete/', bursar_views.bursar_delete_fee_structure, name='bursar_delete_fee_structure'),
 ]

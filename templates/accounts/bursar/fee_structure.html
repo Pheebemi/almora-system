@@ -1,0 +1,132 @@
+{% extends 'layout/bursar_layout.html' %}
+{% load static %}
+
+{% block title %}Fee Structure{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden xl:ml-[270px]">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-700 rounded-2xl p-8 text-white shadow-xl">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-1">Fee Structure</h1>
+                    <p class="text-green-100 text-lg">Set and manage school fee amounts per session, department, and level</p>
+                </div>
+            </div>
+
+            <!-- Set a Fee -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="ti ti-plus mr-2 text-green-500"></i>
+                    Set / Update a Fee
+                </h2>
+                <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Academic Session</label>
+                        <select name="academic_session" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                            <option value="">Select session</option>
+                            {% for sess in available_sessions %}
+                            <option value="{{ sess.id }}">{{ sess.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Department</label>
+                        <select name="department" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                            <option value="">Select department</option>
+                            {% for dept in available_departments %}
+                            <option value="{{ dept.id }}">{{ dept.faculty.name }} — {{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Level</label>
+                        <select name="level" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                            <option value="">Select level</option>
+                            {% for lvl in available_levels %}
+                            <option value="{{ lvl.id }}">{{ lvl.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.01" min="0" name="amount" required placeholder="Amount (₦)" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition whitespace-nowrap">
+                            <i class="ti ti-check mr-1"></i> Save
+                        </button>
+                    </div>
+                </form>
+                <p class="text-xs text-gray-400 mt-3">Setting a fee for a session/department/level combination that already has one will update it instead of creating a duplicate.</p>
+            </div>
+
+            <!-- Filter -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <form method="GET" class="flex items-end gap-3">
+                    <div class="sm:w-64">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Filter by Session</label>
+                        <select name="session" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                            <option value="">All Sessions</option>
+                            {% for sess in available_sessions %}
+                            <option value="{{ sess.id }}" {% if filter_session == sess.id|stringformat:"d" %}selected{% endif %}>{{ sess.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="inline-flex items-center px-5 py-2 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 transition">
+                        <i class="ti ti-filter mr-1.5"></i> Filter
+                    </button>
+                    {% if filter_session %}
+                    <a href="{% url 'accounts:bursar_fee_structure' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+                        <i class="ti ti-x"></i>
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Fee Structure List -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">Configured Fees ({{ fee_structures|length }})</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Session</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for fee in fee_structures %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ fee.academic_session.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ fee.department.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ fee.level.display_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">₦{{ fee.amount|floatformat:2 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <form method="POST" action="{% url 'accounts:bursar_delete_fee_structure' fee.id %}" class="inline" onsubmit="return confirm('Remove this fee entry?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Delete">
+                                            <i class="ti ti-trash text-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">No fees configured yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

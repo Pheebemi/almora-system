@@ -11,7 +11,8 @@ class User(AbstractUser):
         ('admin', 'Admin'),
         ('exam_officer', 'Exam Officer'),
         ('applicant', 'Applicant'),
-        ('application_manager', 'Application Manager')
+        ('application_manager', 'Application Manager'),
+        ('bursar', 'Bursar'),
     )
 
     user_type = models.CharField(max_length=25, choices=USER_TYPE_CHOICES)
@@ -494,6 +495,20 @@ class ExamOfficerProfile(models.Model):
         if self.can_manage_nce:
             types.append('nce')
         return types
+
+
+class BursarProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='bursarprofile')
+    staff_id = models.CharField(max_length=20, unique=True)
+    date_assigned = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Bursar Profile'
+        verbose_name_plural = 'Bursar Profiles'
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.staff_id}"
 
 
 GRADE_SCALE = (
