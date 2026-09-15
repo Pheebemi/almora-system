@@ -750,6 +750,10 @@ def create_student(request):
         messages.error(request, "Staff profile not found.")
         return redirect('dashboard:staff_dashboard')
 
+    if not staff_profile.is_head_of_department:
+        messages.error(request, "Only the Head of Department can create students.")
+        return redirect('accounts:department_students')
+
     if request.method == 'POST':
         # Get form data
         first_name = request.POST.get('first_name', '').strip()

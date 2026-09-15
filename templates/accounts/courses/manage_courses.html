@@ -16,6 +16,7 @@
                         <h1 class="text-2xl md:text-3xl font-bold mb-1">Manage Courses</h1>
                         <p class="text-white/90 text-lg">{% if is_admin %}All Departments (School-Wide){% else %}{{ department.name|default:"Department" }}{% endif %}</p>
                     </div>
+                    {% if is_admin or request.user.staffprofile.is_head_of_department %}
                     <a href="{% url 'accounts:create_course' %}"
                         class="inline-flex items-center px-5 py-2.5 bg-white text-emerald-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,6 +25,7 @@
                         </svg>
                         Create New Course
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -306,6 +308,7 @@
                                         </svg>
                                         <p class="font-medium text-gray-700 mb-1">No courses yet</p>
                                         <p class="text-sm mb-4">{% if is_admin %}Create the first course for the school.{% else %}Create your first course for {{ department.name|default:"your department" }}.{% endif %}</p>
+                                        {% if is_admin or request.user.staffprofile.is_head_of_department %}
                                         <a href="{% url 'accounts:create_course' %}"
                                             class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
@@ -315,6 +318,7 @@
                                             </svg>
                                             Create Course
                                         </a>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>

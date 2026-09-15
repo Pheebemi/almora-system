@@ -15,6 +15,10 @@ def is_staff(user):
 def create_course(request):
     is_admin = request.user.user_type == 'admin'
 
+    if not is_admin and not request.user.staffprofile.is_head_of_department:
+        messages.error(request, "Only the Head of Department can create courses.")
+        return redirect('accounts:manage_courses')
+
     if request.method == 'POST':
         course = Course.objects.create(
             code=request.POST.get('code'),
