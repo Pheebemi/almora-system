@@ -1,0 +1,81 @@
+{% extends 'layout/staff_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Upload Result{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Upload Result</h1>
+                        <p class="text-blue-200 text-lg">Courses assigned to you by the exam officer</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if results_locked %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                <i class="ti ti-lock text-xl text-red-600"></i>
+                <p class="text-sm text-red-700 font-medium">Your result upload access has been locked by the exam officer. You can view results but cannot add or edit them until it is unlocked.</p>
+            </div>
+            {% endif %}
+
+            <!-- Assigned Courses -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">Assigned Courses ({{ assignments|length }})</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned On</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for assignment in assignments %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-semibold text-gray-900">{{ assignment.course.code }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-gray-700">{{ assignment.course.title }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ assignment.course.get_semester_display }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ assignment.assigned_at|date:"d M Y" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <a href="{% url 'accounts:staff_upload_result' assignment.course.id %}" class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition">
+                                        <i class="ti ti-edit mr-1"></i>
+                                        {% if results_locked %}View{% else %}Upload{% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center text-gray-500">
+                                        <i class="ti ti-clipboard-off text-4xl text-gray-300 mb-4"></i>
+                                        <p class="font-medium text-gray-700 mb-1">No courses assigned yet</p>
+                                        <p class="text-sm">Your exam officer hasn't assigned you any courses for result upload.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

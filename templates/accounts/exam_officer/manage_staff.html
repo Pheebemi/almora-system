@@ -1,0 +1,153 @@
+{% extends 'layout/exam_officer_layout.html' %}
+{% load static %}
+
+{% block title %}Manage Staff - Result Assignments{% endblock %}
+
+{% block layout %}
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Manage Staff</h1>
+                        <p class="text-indigo-200 text-lg">Assign staff to courses and control their result upload access</p>
+                    </div>
+                    <a href="{% url 'accounts:exam_officer_dashboard' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
+                        <i class="ti ti-arrow-left mr-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <form method="GET" class="flex flex-col sm:flex-row gap-3 sm:items-end">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Search by Name or Staff ID</label>
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="e.g. Musa or STF-0021..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" />
+                    </div>
+                    <div class="sm:w-64">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Department</label>
+                        <select name="department" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                            <option value="">All Departments</option>
+                            {% for dept in available_departments %}
+                            <option value="{{ dept.id }}" {% if filter_department == dept.id|stringformat:"d" %}selected{% endif %}>{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        <i class="ti ti-search mr-1.5"></i> Go
+                    </button>
+                    {% if search_query or filter_department %}
+                    <a href="{% url 'accounts:exam_officer_manage_staff' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+                        <i class="ti ti-x mr-1"></i> Clear
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Staff List -->
+            <div class="space-y-4">
+                {% for staff in staff_list %}
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="ti ti-user text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">{{ staff.user.get_full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ staff.staff_id }} • {{ staff.department.name }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            {% if staff.results_locked %}
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                                <i class="ti ti-lock mr-1"></i> Locked
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                                <i class="ti ti-lock-open mr-1"></i> Active
+                            </span>
+                            {% endif %}
+                            <form method="POST" action="{% url 'accounts:exam_officer_toggle_staff_lock' staff.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition {% if staff.results_locked %}bg-green-600 text-white hover:bg-green-700{% else %}bg-red-600 text-white hover:bg-red-700{% endif %}">
+                                    {% if staff.results_locked %}Unlock{% else %}Lock{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-4">
+                        <p class="text-xs font-medium text-gray-500 uppercase mb-2">Assigned Courses</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for assignment in staff.course_assignments.all %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-lg">
+                                {{ assignment.course.code }}
+                                <form method="POST" action="{% url 'accounts:exam_officer_unassign_staff_course' staff.id assignment.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-indigo-400 hover:text-red-600 transition" title="Remove assignment">
+                                        <i class="ti ti-x text-sm"></i>
+                                    </button>
+                                </form>
+                            </span>
+                            {% empty %}
+                            <span class="text-xs text-gray-400 italic">No courses assigned yet.</span>
+                            {% endfor %}
+                        </div>
+
+                        <form method="POST" action="{% url 'accounts:exam_officer_assign_staff_course' staff.id %}" class="flex flex-col sm:flex-row gap-2">
+                            {% csrf_token %}
+                            <select name="course_id" required class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                                <option value="">Select a course to assign...</option>
+                                {% for course in available_courses %}
+                                <option value="{{ course.id }}">{{ course.code }} — {{ course.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
+                                <i class="ti ti-plus mr-1.5"></i> Assign
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-12 text-center">
+                    <i class="ti ti-users text-4xl text-gray-300 mb-4"></i>
+                    <p class="font-medium text-gray-700 mb-1">No staff found</p>
+                    <p class="text-sm text-gray-500">No staff match your search, or there are no staff in your assigned programme type(s) yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls -->
+            {% if paginator.num_pages > 1 %}
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p class="text-sm text-gray-600">
+                    Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ paginator.count }} staff
+                </p>
+                <nav class="flex items-center gap-1">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if filter_department %}&department={{ filter_department }}{% endif %}"
+                       class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                        <i class="ti ti-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                    <span class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg">{{ page_obj.number }}</span>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if filter_department %}&department={{ filter_department }}{% endif %}"
+                       class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                        <i class="ti ti-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+{% endblock %}

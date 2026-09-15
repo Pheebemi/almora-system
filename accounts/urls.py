@@ -41,4 +41,12 @@ urlpatterns = [
     path('exam-officer/upload-results/<int:course_id>/', exam_officer_views.upload_results, name='exam_officer_upload_results'),
     path('exam-officer/student-gpas/', exam_officer_views.view_student_gpas, name='exam_officer_student_gpas'),
     path('exam-officer/results-sheet/', exam_officer_views.department_results_sheet, name='exam_officer_results_sheet'),
+    path('exam-officer/staff/', exam_officer_views.manage_staff, name='exam_officer_manage_staff'),
+    path('exam-officer/staff/<int:staff_id>/assign/', exam_officer_views.assign_staff_course, name='exam_officer_assign_staff_course'),
+    path('exam-officer/staff/<int:staff_id>/unassign/<int:assignment_id>/', exam_officer_views.unassign_staff_course, name='exam_officer_unassign_staff_course'),
+    path('exam-officer/staff/<int:staff_id>/toggle-lock/', exam_officer_views.toggle_staff_lock, name='exam_officer_toggle_staff_lock'),
+
+    # Staff Result Upload URLs (courses assigned by an exam officer)
+    path('result-courses/', course_views.staff_result_courses, name='staff_result_courses'),
+    path('result-courses/<int:course_id>/', course_views.staff_upload_result, name='staff_upload_result'),
 ]

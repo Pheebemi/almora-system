@@ -272,7 +272,11 @@ class StaffProfile(models.Model):
     # Additional Staff Details
     date_employed = models.DateField(blank=True, null=True)
     is_head_of_department = models.BooleanField(default=False)
-    
+    results_locked = models.BooleanField(
+        default=False,
+        help_text='When true, this staff member cannot add or edit results for any of their assigned courses.'
+    )
+
     def __str__(self):
         return f"{self.user.username} - {self.staff_id}"
 
@@ -326,6 +330,23 @@ class CourseOffering(models.Model):
 
     def __str__(self):
         return f"{self.course.code} - {self.department.name} - {self.level.display_name}"
+
+# Course Staff Assignment - an exam officer assigns a staff member to upload
+# results for a course (staff can then only upload for their own assignments)
+class CourseStaffAssignment(models.Model):
+    staff = models.ForeignKey(StaffProfile, on_delete=models.CASCADE, related_name='course_assignments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='staff_assignments')
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='course_assignments_made')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('staff', 'course')
+        ordering = ['-assigned_at']
+        verbose_name = 'Course Staff Assignment'
+        verbose_name_plural = 'Course Staff Assignments'
+
+    def __str__(self):
+        return f"{self.staff.user.get_full_name()} → {self.course.code}"
 
 # Course Registration Model
 class CourseRegistration(models.Model):

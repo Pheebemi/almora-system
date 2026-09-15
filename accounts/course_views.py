@@ -3,7 +3,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Course, CourseOffering, CourseRegistration, Department, StudentProfile, PaymentTransaction, AcademicSession, Level
+from django.urls import reverse
+from .models import Course, CourseOffering, CourseRegistration, Department, StudentProfile, PaymentTransaction, AcademicSession, Level, CourseStaffAssignment
+from .result_utils import handle_result_upload
 
 def is_staff(user):
     return user.user_type in ('staff', 'admin')
@@ -423,4 +425,47 @@ def student_courses(request):
         return render(request, 'accounts/courses/student_courses.html', context)
     except StudentProfile.DoesNotExist:
         messages.error(request, "Student profile not found. Please contact the administrator.")
-        return redirect('dashboard:student_dashboard') 
+        return redirect('dashboard:student_dashboard')
+
+
+@login_required
+@user_passes_test(is_staff)
+def staff_result_courses(request):
+    """List the courses a staff member has been assigned by an exam officer to upload results for."""
+    staff_profile = request.user.staffprofile
+
+    assignments = CourseStaffAssignment.objects.filter(
+        staff=staff_profile
+    ).select_related('course').order_by('course__code')
+
+    context = {
+        'assignments': assignments,
+        'results_locked': staff_profile.results_locked,
+    }
+    return render(request, 'accounts/courses/staff_result_courses.html', context)
+
+
+@login_required
+@user_passes_test(is_staff)
+def staff_upload_result(request, course_id):
+    """Upload/edit results for a course the staff member has been assigned to."""
+    staff_profile = request.user.staffprofile
+    assignment = get_object_or_404(CourseStaffAssignment, staff=staff_profile, course_id=course_id)
+    course = assignment.course
+
+    result = handle_result_upload(
+        request, course,
+        redirect_url_name='accounts:staff_upload_result',
+        redirect_args=[course.id],
+        locked=staff_profile.results_locked,
+        locked_message="Your result upload access has been locked by the exam officer. Contact them to make further changes.",
+    )
+    if not isinstance(result, dict):
+        return result  # POST -> redirect
+
+    context = {
+        'course': course,
+        'back_url': reverse('accounts:staff_result_courses'),
+        **result,
+    }
+    return render(request, 'accounts/courses/result_upload.html', context) 

@@ -1,4 +1,4 @@
-{% extends 'layout/exam_officer_layout.html' %}
+{% extends layout_template|default:'layout/exam_officer_layout.html' %}
 {% load static %}
 
 {% block title %}Upload Results - {{ course.code }}{% endblock %}
@@ -24,13 +24,20 @@
                             <i class="ti ti-file-spreadsheet mr-2"></i>
                             Print Score Sheet
                         </button>
-                        <a href="{% url 'accounts:exam_officer_select_course' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
+                        <a href="{{ back_url }}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
                             <i class="ti ti-arrow-left mr-2"></i>
                             Back to Courses
                         </a>
                     </div>
                 </div>
             </div>
+
+            {% if locked %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                <i class="ti ti-lock text-xl text-red-600"></i>
+                <p class="text-sm text-red-700 font-medium">Your result upload access has been locked by the exam officer. You can view results below but cannot add or edit them.</p>
+            </div>
+            {% endif %}
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -147,10 +154,10 @@
                                         {% endif %}
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap text-center">
-                                        <input type="number" name="test_{{ item.student.id }}" value="{{ item.test_score }}" min="0" max="{{ item.max_test }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="test" data-programme="{{ item.programme_type }}">
+                                        <input type="number" name="test_{{ item.student.id }}" value="{{ item.test_score }}" min="0" max="{{ item.max_test }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="test" data-programme="{{ item.programme_type }}" {% if locked %}disabled{% endif %}>
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap text-center">
-                                        <input type="number" name="exam_{{ item.student.id }}" value="{{ item.exam_score }}" min="0" max="{{ item.max_exam }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="exam" data-programme="{{ item.programme_type }}">
+                                        <input type="number" name="exam_{{ item.student.id }}" value="{{ item.exam_score }}" min="0" max="{{ item.max_exam }}" step="0.5" placeholder="0" class="w-20 px-2 py-1.5 text-sm text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 score-input" data-student="{{ item.student.id }}" data-type="exam" data-programme="{{ item.programme_type }}" {% if locked %}disabled{% endif %}>
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap text-center">
                                         <span id="total_{{ item.student.id }}" class="text-sm font-semibold text-gray-900">{% if item.total_score %}{{ item.total_score }}{% else %}—{% endif %}</span>
@@ -170,7 +177,7 @@
                         </table>
                     </div>
 
-                    {% if students_data %}
+                    {% if students_data and not locked %}
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
                         <p class="text-sm text-gray-600">
                             <strong>{{ results_completed }}</strong> of <strong>{{ total_students }}</strong> results entered
@@ -179,6 +186,12 @@
                             <i class="ti ti-check mr-2"></i>
                             Save Results
                         </button>
+                    </div>
+                    {% elif students_data and locked %}
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <p class="text-sm text-gray-600">
+                            <strong>{{ results_completed }}</strong> of <strong>{{ total_students }}</strong> results entered — editing is locked.
+                        </p>
                     </div>
                     {% endif %}
                 </form>
@@ -273,11 +286,13 @@ function printCourseResults() {
 
     rows.forEach(row => {
         const idNumber = row.querySelector('td:nth-child(2) span').textContent.trim();
-        const testScore = row.querySelector('[data-type="test"]').value || '0';
-        const examScore = row.querySelector('[data-type="exam"]').value || '0';
+        const testInput = row.querySelector('[data-type="test"]');
+        const examInput = row.querySelector('[data-type="exam"]');
+        const testScore = testInput ? (testInput.value || '0') : '0';
+        const examScore = examInput ? (examInput.value || '0') : '0';
         const totalScore = row.querySelector('td:nth-child(8) span').textContent.trim();
         const grade = row.querySelector('td:nth-child(9) span').textContent.trim();
-        
+
         // Only include if a score exists or total is calculated
         if (totalScore && totalScore !== '—' && totalScore !== '0.0') {
             rowsHTML += `
@@ -305,7 +320,7 @@ function printCourseResults() {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
-    
+
     const printContent = `
         <!DOCTYPE html>
         <html lang="en">
@@ -441,7 +456,7 @@ function printCourseResults() {
             </table>
 
             <div class="footer">
-                <span>Result generated by Exam Officer</span>
+                <span>Result generated by {{ request.user.get_full_name }}</span>
                 <span>Date: ${today}</span>
                 <span>Total: ${sn-1} record(s)</span>
             </div>
@@ -625,7 +640,7 @@ function printScoreSheet() {
             </table>
 
             <div class="footer">
-                <span>Prepared by Exam Officer</span>
+                <span>Prepared by {{ request.user.get_full_name }}</span>
                 <span>Date: ${today}</span>
                 <span>Total Students: ${sn - 1}</span>
             </div>

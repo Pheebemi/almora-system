@@ -50,6 +50,14 @@
 
                     <li class="sidebar-item">
                         <a class="sidebar-link gap-3 py-2 px-3 rounded-md w-full flex items-center hover:text-white hover:bg-indigo-500"
+                            href="{% url 'accounts:exam_officer_manage_staff' %}">
+                            <i class="ti ti-users-group text-xl"></i>
+                            <span>Manage Staff</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a class="sidebar-link gap-3 py-2 px-3 rounded-md w-full flex items-center hover:text-white hover:bg-indigo-500"
                             href="{% url 'accounts:exam_officer_student_gpas' %}">
                             <i class="ti ti-report-analytics text-xl"></i>
                             <span>Student GPAs</span>

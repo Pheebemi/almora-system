@@ -1,17 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
 from django_ratelimit.decorators import ratelimit
 from .models import (
     User, ExamOfficerProfile, Result, SemesterGPA,
     Course, CourseOffering, CourseRegistration, StudentProfile,
-    AcademicSession, Level, Department, Faculty
+    AcademicSession, Level, Department, Faculty,
+    StaffProfile, CourseStaffAssignment,
 )
 from .utils import resolve_login_username
+from .result_utils import handle_result_upload
 
 
 def is_exam_officer(user):
@@ -250,13 +255,6 @@ def upload_results(request, course_id):
     assigned_types = officer.assigned_programme_types
 
     course = get_object_or_404(Course, id=course_id)
-    
-    # Get the session from the URL parameter, default to active session
-    session_id = request.GET.get('session')
-    if session_id:
-        current_session = get_object_or_404(AcademicSession, id=session_id)
-    else:
-        current_session = AcademicSession.objects.filter(is_active=True).first()
 
     # Verify this course belongs to officer's assigned programme types
     valid_offerings = CourseOffering.objects.filter(
@@ -267,198 +265,20 @@ def upload_results(request, course_id):
         messages.error(request, "You are not authorized to upload results for this course.")
         return redirect('accounts:exam_officer_select_course')
 
-    # Determine if this is a historical session
-    active_session = AcademicSession.objects.filter(is_active=True).first()
-    is_historical = current_session != active_session
-
-    # Get all departments and levels that offer this course
-    offering_dept_levels = valid_offerings.values_list('department_id', 'level_id')
-
-    # Build query to get the correct students
-    from django.db.models import Q
-    student_q = Q()
-    
-    if not is_historical:
-        # For the active session, pull everyone currently in the level AND session
-        for dept_id, level_id in offering_dept_levels:
-            student_q |= Q(department_id=dept_id, current_level_id=level_id, current_session=current_session)
-            
-    # Always include students who actually registered or already have results for this course/session
-    student_q |= Q(
-        registrations__course=course, 
-        registrations__academic_session=current_session,
-        registrations__status='registered'
+    result = handle_result_upload(
+        request, course,
+        redirect_url_name='accounts:exam_officer_upload_results',
+        redirect_args=[course.id],
     )
-    student_q |= Q(
-        results__course=course,
-        results__academic_session=current_session
-    )
-
-    all_students = StudentProfile.objects.filter(
-        student_q
-    ).distinct().select_related('user', 'current_level', 'department').order_by('user__id_number')
-
-    # Get set of registered student IDs for this course
-    registered_student_ids = set(
-        CourseRegistration.objects.filter(
-            course=course,
-            status='registered'
-        ).values_list('student_id', flat=True)
-    )
-
-    if request.method == 'POST':
-        saved_count = 0
-        errors = []
-        for student in all_students:
-            test_key = f"test_{student.id}"
-            exam_key = f"exam_{student.id}"
-
-            test_score = request.POST.get(test_key, '').strip()
-            exam_score = request.POST.get(exam_key, '').strip()
-
-            if not test_score and not exam_score:
-                continue  # Skip students with no scores entered
-
-            try:
-                test_val = float(test_score) if test_score else 0
-                exam_val = float(exam_score) if exam_score else 0
-
-                # Get programme-specific limits
-                programme_type = student.programme_type
-                if programme_type == 'nd':
-                    max_test, max_exam = 40, 60
-                else: # hnd, degree, etc.
-                    max_test, max_exam = 30, 70
-
-                if test_val < 0 or test_val > max_test:
-                    errors.append(f"{student.user.get_full_name()} ({programme_type.upper()}): Test score must be 0-{max_test}")
-                    continue
-                if exam_val < 0 or exam_val > max_exam:
-                    errors.append(f"{student.user.get_full_name()} ({programme_type.upper()}): Exam score must be 0-{max_exam}")
-                    continue
-
-                # Get the level from the course offering for this student
-                offering = CourseOffering.objects.filter(
-                    course=course,
-                    department=student.department
-                ).first()
-                level = offering.level if offering else student.current_level
-
-                result, created = Result.objects.update_or_create(
-                    student=student,
-                    course=course,
-                    academic_session=current_session,
-                    defaults={
-                        'semester': course.semester,
-                        'level': level,
-                        'test_score': test_val,
-                        'exam_score': exam_val,
-                        'uploaded_by': request.user,
-                    }
-                )
-                
-                # IMPORTANT: update_or_create doesn't always trigger custom save() logic 
-                # (like calculate_grade) if fields don't seem to change in the way Django expects,
-                # or it might use bulk updates. We must call save() explicitly to force recalculation.
-                result.save()
-                
-                saved_count += 1
-            except (ValueError, TypeError) as e:
-                errors.append(f"{student.user.get_full_name()}: Invalid score value")
-
-        if errors:
-            for err in errors:
-                messages.warning(request, err)
-        if saved_count > 0:
-            messages.success(request, f"Successfully saved {saved_count} result(s) for {course.code}!")
-
-            # Auto-calculate GPA/CGPA for all students who got results
-            students_with_results = Result.objects.filter(
-                course=course,
-                academic_session=current_session
-            ).values_list('student_id', flat=True).distinct()
-
-            gpa_updated = 0
-            for student_id in students_with_results:
-                try:
-                    student_profile = StudentProfile.objects.get(id=student_id)
-                    # Get or create SemesterGPA for this student/session/semester
-                    semester_gpa, created = SemesterGPA.objects.get_or_create(
-                        student=student_profile,
-                        academic_session=current_session,
-                        semester=course.semester,
-                        defaults={
-                            'level': student_profile.current_level,
-                        }
-                    )
-                    # Calculate GPA for this semester
-                    semester_gpa.calculate_gpa()
-                    # Calculate cumulative GPA
-                    semester_gpa.calculate_cgpa()
-                    semester_gpa.save()
-
-                    gpa_updated += 1
-                except Exception as e:
-                    print(f"Error calculating GPA for student {student_id}: {e}")
-
-            if gpa_updated > 0:
-                messages.info(request, f"GPA/CGPA updated for {gpa_updated} student(s).")
-
-        return redirect('accounts:exam_officer_upload_results', course_id=course.id)
-
-    # Get existing results for pre-filling the form
-    results_map = {}
-    existing_results = Result.objects.filter(
-        course=course,
-        academic_session=current_session
-    )
-    for r in existing_results:
-        results_map[r.student_id] = r
-
-    # Build detailed context for each student
-    students_data = []
-    for student in all_students:
-        result = results_map.get(student.id)
-        
-        # Get student-specific limits
-        p_type = student.programme_type
-        if p_type == 'nd':
-            max_test, max_exam = 40, 60
-        else:
-            max_test, max_exam = 30, 70
-            
-        students_data.append({
-            'student': student,
-            'is_registered': student.id in registered_student_ids,
-            'has_result': result is not None,
-            'test_score': result.test_score if result else '',
-            'exam_score': result.exam_score if result else '',
-            'total_score': result.total_score if result else None,
-            'grade': result.grade if result else None,
-            'programme_type': p_type,
-            'max_test': max_test,
-            'max_exam': max_exam,
-        })
-
-    # Determine dominant programme type for UI hints
-    dominant_type = 'degree'
-    if all_students.exists():
-        from collections import Counter
-        type_counts = Counter(s.programme_type for s in all_students)
-        dominant_type = type_counts.most_common(1)[0][0]
+    if not isinstance(result, dict):
+        return result  # POST -> redirect
 
     context = {
         'course': course,
-        'current_session': current_session,
-        'students_data': students_data,
-        'total_students': all_students.count(),
-        'registered_count': len(registered_student_ids),
-        'results_completed': len(results_map),
-        'dominant_type': dominant_type,
-        'max_test': 40 if dominant_type == 'nd' else 30,
-        'max_exam': 60 if dominant_type == 'nd' else 70,
+        'back_url': reverse('accounts:exam_officer_select_course'),
+        **result,
     }
-    return render(request, 'accounts/exam_officer/upload_results.html', context)
+    return render(request, 'accounts/courses/result_upload.html', context)
 
 
 @login_required
@@ -610,3 +430,120 @@ def department_results_sheet(request):
         'student_results': student_results,
         'total_students': len(student_results),
     })
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def manage_staff(request):
+    """List staff in the officer's assigned programme types and manage their
+    course result-upload assignments and lock status."""
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+
+    search_query = request.GET.get('q', '').strip()
+    filter_department = request.GET.get('department', '')
+
+    staff_qs = StaffProfile.objects.filter(
+        department__faculty__programme_type__in=assigned_types
+    ).select_related('user', 'department', 'faculty').prefetch_related('course_assignments__course')
+
+    if filter_department:
+        staff_qs = staff_qs.filter(department_id=filter_department)
+
+    if search_query:
+        staff_qs = staff_qs.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(staff_id__icontains=search_query)
+        )
+
+    staff_qs = staff_qs.order_by('user__last_name', 'user__first_name')
+
+    paginator = Paginator(staff_qs, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    available_courses = Course.objects.filter(
+        offerings__department__faculty__programme_type__in=assigned_types,
+        is_active=True
+    ).distinct().order_by('code')
+
+    available_departments = Department.objects.filter(
+        faculty__programme_type__in=assigned_types
+    ).order_by('name')
+
+    context = {
+        'staff_list': page_obj,
+        'page_obj': page_obj,
+        'available_courses': available_courses,
+        'available_departments': available_departments,
+        'search_query': search_query,
+        'filter_department': filter_department,
+    }
+    return render(request, 'accounts/exam_officer/manage_staff.html', context)
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def assign_staff_course(request, staff_id):
+    """Assign a course to a staff member so they can upload results for it."""
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+    staff = get_object_or_404(
+        StaffProfile, id=staff_id, department__faculty__programme_type__in=assigned_types
+    )
+
+    if request.method == 'POST':
+        course = get_object_or_404(
+            Course, id=request.POST.get('course_id'),
+            offerings__department__faculty__programme_type__in=assigned_types
+        )
+        assignment, created = CourseStaffAssignment.objects.get_or_create(
+            staff=staff, course=course,
+            defaults={'assigned_by': request.user}
+        )
+        if created:
+            messages.success(request, f"{staff.user.get_full_name()} assigned to {course.code}.")
+        else:
+            messages.info(request, f"{staff.user.get_full_name()} is already assigned to {course.code}.")
+
+    return redirect('accounts:exam_officer_manage_staff')
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def unassign_staff_course(request, staff_id, assignment_id):
+    """Remove a staff member's assignment to a course."""
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+    staff = get_object_or_404(
+        StaffProfile, id=staff_id, department__faculty__programme_type__in=assigned_types
+    )
+    assignment = get_object_or_404(CourseStaffAssignment, id=assignment_id, staff=staff)
+
+    if request.method == 'POST':
+        course_code = assignment.course.code
+        assignment.delete()
+        messages.success(request, f"Removed {staff.user.get_full_name()}'s assignment to {course_code}.")
+
+    return redirect('accounts:exam_officer_manage_staff')
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def toggle_staff_lock(request, staff_id):
+    """Lock or unlock a staff member's ability to add/edit results for their assigned courses."""
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+    staff = get_object_or_404(
+        StaffProfile, id=staff_id, department__faculty__programme_type__in=assigned_types
+    )
+
+    if request.method == 'POST':
+        staff.results_locked = not staff.results_locked
+        staff.save(update_fields=['results_locked'])
+        if staff.results_locked:
+            messages.success(request, f"Result upload locked for {staff.user.get_full_name()}.")
+        else:
+            messages.success(request, f"Result upload unlocked for {staff.user.get_full_name()}.")
+
+    return redirect('accounts:exam_officer_manage_staff')
