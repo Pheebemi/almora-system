@@ -218,7 +218,7 @@ function printCourseForm() {
     var faculty = "{{ request.user.studentprofile.faculty.name|escapejs }}";
     var sessionName = "{% if academic_session %}{{ academic_session.name|escapejs }}{% else %}N/A{% endif %}";
     var level = "{{ registration_level|escapejs }}";
-    var logoUrl = "{% static 'assets/images/logos/almora.jpg' %}";
+    var logoUrl = "{% static 'assets/images/logos/almola.png' %}";
 
     var firstSemCredits = 0;
     for (var a = 0; a < firstSemCourses.length; a++) { firstSemCredits += firstSemCourses[a].credits; }
@@ -280,7 +280,7 @@ function printCourseForm() {
     var bodyHtml = '<button class="print-btn no-print" onclick="window.print()">Print Course Form</button>'
         + '<div class="header">'
         + '<img src="' + logoUrl + '" alt="Logo">'
-        + '<div class="school-name">Almora Polytechnic Pantisawa</div>'
+        + '<div class="school-name">Almola Polytechnic Pantisawa</div>'
         + '<div class="faculty-name">' + faculty + '</div>'
         + '<div class="dept-name">(Department of ' + department + ')</div>'
         + '<div class="form-title">STUDENT REGISTERED COURSES</div>'

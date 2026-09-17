@@ -684,7 +684,7 @@ def payment_receipt(request, payment_id):
         
         context = {
             'payment': payment,
-            'school_name': 'Almora Polytechnic Pantisawa',
+            'school_name': 'Almola Polytechnic Pantisawa',
             'school_address': 'Pantisawa, Nigeria',
         }
         return render(request, 'accounts/payment_receipt.html', context)

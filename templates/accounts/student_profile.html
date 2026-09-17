@@ -211,13 +211,13 @@
                         <button class="print-btn no-print" onclick="window.print()">Print Profile</button>
 
                         <div class="top-bar">
-                            <img src="{% static 'assets/images/logos/almora.jpg' %}" alt="Logo">
+                            <img src="{% static 'assets/images/logos/almola.png' %}" alt="Logo">
                             ${data.profile_picture
                                 ? '<img src="' + data.profile_picture + '" alt="Photo" class="passport">'
                                 : '<div class="passport-placeholder">' + data.personal_info.full_name.split(' ').map(n => n[0]).join('') + '</div>'}
                         </div>
                         <div class="school-title">
-                            <h1>Almora Polytechnic Pantisawa</h1>
+                            <h1>Almola Polytechnic Pantisawa</h1>
                         </div>
 
                         <div class="section-heading">Personal Details</div>
