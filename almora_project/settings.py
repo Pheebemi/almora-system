@@ -39,6 +39,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'almorapoly.edu.ng',
     'www.almorapoly.edu.ng',
+    'almolapolytechnicnigerialimited.ng',
+    'www.almolapolytechnicnigerialimited.ng',
     '.vercel.app',
 ]
 # Also allow any from env (e.g. for other domains or overrides)
@@ -270,6 +272,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.vercel.app',
     'https://almorapoly.edu.ng',
     'https://www.almorapoly.edu.ng',
+    'https://almolapolytechnicnigerialimited.ng',
+    'https://www.almolapolytechnicnigerialimited.ng',
 ]
 _env_csrf_origins = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').strip()
 if _env_csrf_origins:
